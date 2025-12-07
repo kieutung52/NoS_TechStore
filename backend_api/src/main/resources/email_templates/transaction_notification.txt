@@ -1,0 +1,13 @@
+Dear {userName},
+
+Transaction #{transactionId} has been {status}.
+
+Type: {type}
+Amount: ${amount}
+
+View details in your wallet.
+
+If this seems incorrect, contact support immediately.
+
+Best regards,
+NoS TechStore Team

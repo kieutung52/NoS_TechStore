@@ -1,0 +1,10 @@
+Dear User,
+
+Your One-Time Password (OTP) for {type} is: {otp}
+
+This OTP expires in {expiry}. Do not share it with anyone.
+
+If you didn't request this, please ignore this email.
+
+Best regards,
+NoS TechStore Team

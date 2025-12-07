@@ -1,0 +1,14 @@
+Chào {userName},
+
+Đơn hàng #{orderId} của bạn đã được đặt thành công!
+
+📦 Thông tin đơn hàng:
+- Mã đơn hàng: {orderId}
+- Tổng tiền: {totalAmount}
+- Ngày đặt: {orderDate}
+- Địa chỉ giao hàng: {shippingAddress}
+
+Cảm ơn bạn đã mua sắm tại NoS TechStore!
+
+Trân trọng,
+Đội ngũ NoS TechStore

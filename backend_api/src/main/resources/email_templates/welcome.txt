@@ -1,0 +1,10 @@
+Dear {userName},
+
+Welcome to NoS TechStore! We're excited to have you on board.
+
+Your account has been created successfully with email: {email}.
+
+To get started, please validate your email by entering the OTP we sent (if applicable) or log in directly.
+
+Best regards,
+NoS TechStore Team

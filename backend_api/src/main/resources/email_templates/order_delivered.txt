@@ -1,0 +1,14 @@
+Chào {userName},
+
+Đơn hàng #{orderId} của bạn đã được giao thành công!
+
+✅ Thông tin giao hàng:
+- Mã đơn hàng: {orderId}
+- Ngày giao hàng: {deliveredDate}
+
+Cảm ơn bạn đã tin tưởng và mua sắm tại NoS TechStore!
+
+Nếu bạn hài lòng với sản phẩm, đừng quên để lại đánh giá để chúng tôi phục vụ tốt hơn nhé.
+
+Trân trọng,
+Đội ngũ NoS TechStore

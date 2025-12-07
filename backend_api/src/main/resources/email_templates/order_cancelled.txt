@@ -1,0 +1,12 @@
+Chào {userName},
+
+Đơn hàng #{orderId} của bạn đã bị hủy.
+
+💰 Số tiền {refundAmount} đã được hoàn lại vào ví của bạn.
+
+📝 Lý do: {reason}
+
+Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi.
+
+Trân trọng,
+Đội ngũ NoS TechStore

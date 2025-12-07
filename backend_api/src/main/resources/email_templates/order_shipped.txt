@@ -1,0 +1,14 @@
+Chào {userName},
+
+Đơn hàng #{orderId} của bạn đã được giao cho đơn vị vận chuyển!
+
+🚚 Thông tin vận chuyển:
+- Mã đơn hàng: {orderId}
+- Mã theo dõi: {trackingNumber}
+- Ngày giao hàng dự kiến: {estimatedDeliveryDate}
+- Ngày gửi hàng: {shippedDate}
+
+Bạn có thể theo dõi đơn hàng trong mục "Theo dõi đơn hàng" trên ứng dụng.
+
+Trân trọng,
+Đội ngũ NoS TechStore

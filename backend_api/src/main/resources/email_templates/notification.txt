@@ -1,0 +1,10 @@
+Dear {userName},
+
+This is a general notification from NoS TechStore.
+
+Details: {message}
+
+If you have any questions, contact support.
+
+Best regards,
+NoS TechStore Team
