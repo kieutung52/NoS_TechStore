@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rabbitmq
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq-deployment
+  namespace: techstore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3.9-management
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: "techstorerabbitmq"
+        - name: RABBITMQ_DEFAULT_PASS
+          value: "techstorerabbitmq"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-service
+  namespace: techstore
+spec:
+  selector:
+    app: rabbitmq
+  type: NodePort
+  ports:
+    - port: 5672           # Port AMQP trong cluster
+      targetPort: 5672     # Port AMQP của container
+      nodePort: 30008      # Port AMQP để truy cập từ ngoài Minikube
+      name: amqp
+    - port: 15672          # Port quản lý RabbitMQ trong cluster
+      targetPort: 15672    # Port quản lý RabbitMQ của container
+      nodePort: 30009      # Port quản lý để truy cập từ ngoài Minikube
+      name: management
