@@ -1,5 +1,9 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
+import { fontFamily } from "tailwindcss/defaultTheme";
+
+// Thang đổ bóng cho theme tối: viền sáng mép trên + bóng sâu. Ghi đè sm/md/lg/xl để mọi chỗ đang dùng tự đổi theo.
+const shade = (alpha: number) => `hsl(var(--shadow-color) / ${alpha})`;
 
 export default {
   darkMode: ["class"],
@@ -14,10 +18,21 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['"Be Vietnam Pro"', ...fontFamily.sans],
+        display: ['"Chakra Petch"', '"Be Vietnam Pro"', ...fontFamily.sans],
+        mono: ['"JetBrains Mono"', ...fontFamily.mono],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        field: "hsl(var(--field))",
+        plasma: {
+          DEFAULT: "hsl(var(--plasma))",
+          foreground: "hsl(var(--plasma-foreground))",
+        },
+        cyan: "hsl(var(--cyan))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
@@ -69,9 +84,22 @@ export default {
         },
       },
       borderRadius: {
+        xl: "calc(var(--radius) + 4px)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        sm: `var(--edge-highlight), 0 1px 2px 0 ${shade(0.6)}`,
+        DEFAULT: `var(--edge-highlight), 0 2px 4px -1px ${shade(0.6)}, 0 4px 12px -4px ${shade(0.5)}`,
+        md: `var(--edge-highlight), 0 4px 8px -2px ${shade(0.6)}, 0 12px 24px -8px ${shade(0.55)}`,
+        lg: `var(--edge-highlight), 0 10px 20px -6px ${shade(0.65)}, 0 24px 48px -16px ${shade(0.6)}`,
+        xl: `var(--edge-highlight), 0 16px 32px -8px ${shade(0.7)}, 0 40px 80px -24px ${shade(0.7)}`,
+        glow: "var(--shadow-glow)",
+        "glow-sm": "0 0 0 1px hsl(var(--primary) / 0.35), 0 0 16px -4px hsl(var(--primary) / 0.55)",
+      },
+      transitionTimingFunction: {
+        "out-soft": "var(--ease-out)",
       },
       keyframes: {
         "accordion-down": {
@@ -90,10 +118,21 @@ export default {
             height: "0",
           },
         },
+        // Hiện dần + trồi lên; trễ theo biến --i để xếp tầng (stagger) các phần tử trong lưới
+        rise: {
+          from: { opacity: "0", transform: "translateY(14px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        shimmer: {
+          from: { transform: "translateX(-100%)" },
+          to: { transform: "translateX(100%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        rise: "rise 0.6s var(--ease-out) calc(var(--i, 0) * 70ms) both",
+        shimmer: "shimmer 1.6s ease-in-out infinite",
       },
     },
   },

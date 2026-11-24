@@ -2,128 +2,83 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
+/*
+ * TechStore design system — "Dark tech / glow".
+ * Mọi màu khai báo dạng HSL (không có hsl()) để Tailwind ghép được opacity: bg-primary/10.
+ * Bảng màu đặt tên theo phần cứng: Void (nền) · Chassis (card) · Panel (lớp nổi)
+ * · Ion (xanh, màu chính) · Plasma (tím, màu phụ) · Frost (chữ).
+ * Chỉ có một theme tối; .dark giữ cùng giá trị cho các component có biến thể dark:.
+ */
 @layer base {
-  :root {
-    /* Modern minimalist tech store palette */
-    --background: 0 0% 100%;
-    --foreground: 224 15% 15%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 224 15% 15%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 15% 15%;
-
-    /* Primary: Modern Blue - Tech-inspired */
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 217 91% 75%;
-
-    /* Secondary: Soft Gray */
-    --secondary: 220 13% 95%;
-    --secondary-foreground: 224 15% 15%;
-
-    /* Muted backgrounds */
-    --muted: 220 13% 97%;
-    --muted-foreground: 224 10% 45%;
-
-    /* Accent: Electric Blue */
-    --accent: 210 100% 50%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    /* Success color for status */
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-
-    /* Warning */
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 217 91% 60%;
-
-    --radius: 0.5rem;
-
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 75%));
-    --gradient-hero: linear-gradient(135deg, hsl(217 91% 60% / 0.1), hsl(217 91% 75% / 0.05));
-    
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(224 15% 15% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(224 15% 15% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(224 15% 15% / 0.1);
-    --shadow-glow: 0 0 30px hsl(217 91% 60% / 0.2);
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 224 15% 15%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 13% 95%;
-    --sidebar-accent-foreground: 224 15% 15%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217 91% 60%;
-  }
-
+  :root,
   .dark {
-    --background: 224 20% 10%;
-    --foreground: 220 13% 95%;
+    color-scheme: dark;
 
-    --card: 224 20% 12%;
-    --card-foreground: 220 13% 95%;
+    /* Tầng nền (elevation): càng nổi càng sáng */
+    --background: 225 45% 5%; /* Void  #070A12 */
+    --foreground: 222 40% 93%; /* Frost #E6EBF5 */
 
-    --popover: 224 20% 12%;
-    --popover-foreground: 220 13% 95%;
+    --card: 224 40% 8.5%; /* Chassis #0D1220 */
+    --card-foreground: 222 40% 93%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 217 91% 75%;
+    --popover: 224 36% 11%; /* Panel (lớp phủ) */
+    --popover-foreground: 222 40% 93%;
 
-    --secondary: 224 20% 15%;
-    --secondary-foreground: 220 13% 95%;
+    --field: 225 45% 6.5%; /* nền ô nhập, lõm xuống so với card */
 
-    --muted: 224 20% 15%;
-    --muted-foreground: 220 10% 60%;
+    /* Ion: xanh điện — chữ tối trên nền sáng để đạt tương phản AA */
+    --primary: 214 100% 64%; /* #479AFF */
+    --primary-foreground: 225 60% 5%;
+    --primary-glow: 214 100% 74%;
 
-    --accent: 210 100% 50%;
-    --accent-foreground: 0 0% 100%;
+    /* Plasma: tím, dùng cho gradient và glow */
+    --plasma: 263 93% 70%; /* #A06BFA */
+    --plasma-foreground: 225 60% 5%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    /* Cyan: điểm thứ ba của dải RGB */
+    --cyan: 188 95% 55%;
 
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
+    --secondary: 224 32% 15%;
+    --secondary-foreground: 222 40% 93%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --muted: 224 32% 13%;
+    --muted-foreground: 222 16% 62%; /* Steel #8F98AD */
 
-    --border: 224 20% 20%;
-    --input: 224 20% 20%;
-    --ring: 217 91% 60%;
+    /* accent = nền hover/focus của menu, nút ghost */
+    --accent: 223 34% 18%;
+    --accent-foreground: 222 40% 97%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 75%));
-    --gradient-hero: linear-gradient(135deg, hsl(217 91% 60% / 0.15), hsl(217 91% 75% / 0.05));
-    
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.5);
-    --shadow-glow: 0 0 30px hsl(217 91% 60% / 0.3);
+    --destructive: 350 95% 64%;
+    --destructive-foreground: 225 60% 5%;
 
-    --sidebar-background: 224 20% 12%;
-    --sidebar-foreground: 220 13% 95%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 224 20% 15%;
-    --sidebar-accent-foreground: 220 13% 95%;
-    --sidebar-border: 224 20% 20%;
-    --sidebar-ring: 217 91% 60%;
+    --success: 156 70% 46%;
+    --success-foreground: 225 60% 5%;
+
+    --warning: 38 100% 58%;
+    --warning-foreground: 225 60% 5%;
+
+    --border: 224 30% 17%;
+    --input: 224 30% 20%;
+    --ring: 214 100% 64%;
+
+    --radius: 0.75rem;
+
+    /* Đổ bóng: viền sáng mép trên (như mép nhôm) + bóng sâu màu xanh đen */
+    --shadow-color: 228 60% 2%;
+    --edge-highlight: inset 0 1px 0 0 hsl(220 60% 92% / 0.06);
+    --shadow-glow: 0 0 0 1px hsl(var(--primary) / 0.45), 0 0 22px -4px hsl(var(--primary) / 0.5),
+      0 0 56px -12px hsl(var(--plasma) / 0.55);
+
+    --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    --sidebar-background: 225 45% 6.5%;
+    --sidebar-foreground: 222 30% 82%;
+    --sidebar-primary: 214 100% 64%;
+    --sidebar-primary-foreground: 225 60% 5%;
+    --sidebar-accent: 223 34% 14%;
+    --sidebar-accent-foreground: 222 40% 97%;
+    --sidebar-border: 224 30% 14%;
+    --sidebar-ring: 214 100% 64%;
   }
 }
 
@@ -132,7 +87,150 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-sans text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Không khí nền: hai quầng sáng Ion/Plasma + lưới chấm như bo mạch (PCB). Cố định, không ăn sự kiện. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      radial-gradient(1100px 560px at 8% -12%, hsl(var(--primary) / 0.13), transparent 62%),
+      radial-gradient(900px 520px at 100% -6%, hsl(var(--plasma) / 0.12), transparent 60%),
+      radial-gradient(hsl(var(--foreground) / 0.045) 1px, transparent 1.2px);
+    background-size: auto, auto, 26px 26px;
+    mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.35);
+    color: hsl(var(--foreground));
+  }
+
+  /* Thanh cuộn mảnh, tông tối */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--input)) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--input));
+    border: 3px solid hsl(var(--background));
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.6);
+  }
+}
+
+@layer components {
+  /* Chữ gradient Ion → Plasma, dùng tiết chế cho điểm nhấn */
+  .text-gradient {
+    background-image: linear-gradient(100deg, hsl(var(--primary)) 0%, hsl(var(--plasma)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Nhãn nhỏ phía trên tiêu đề, kiểu ký hiệu in trên linh kiện */
+  .eyebrow {
+    @apply font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-primary;
+  }
+
+  /* Lớp kính cho header dính, popover */
+  .glass {
+    background-color: hsl(var(--popover) / 0.72);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(16px) saturate(140%);
+  }
+
+  /*
+   * SIGNATURE — "RGB sync edge": viền chạy dải màu xoay vòng như dải LED RGB trong case PC.
+   * Chỉ hiện khi hover/focus; tắt xoay khi người dùng giảm chuyển động.
+   */
+  .rgb-edge {
+    position: relative;
+    transition:
+      transform 0.3s var(--ease-out),
+      box-shadow 0.3s var(--ease-out);
+  }
+  .rgb-edge::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    padding: 1px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--rgb-angle),
+      hsl(var(--primary)),
+      hsl(var(--plasma)),
+      hsl(var(--cyan)),
+      hsl(var(--primary))
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s var(--ease-out);
+  }
+  .rgb-edge:hover,
+  .rgb-edge:focus-within {
+    box-shadow: var(--shadow-glow);
+  }
+  .rgb-edge:hover::before,
+  .rgb-edge:focus-within::before {
+    opacity: 1;
+    animation: rgb-spin 3.6s linear infinite;
+  }
+}
+
+/* Góc xoay của dải RGB — cần @property để trình duyệt nội suy được góc */
+@property --rgb-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes rgb-spin {
+  to {
+    --rgb-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
