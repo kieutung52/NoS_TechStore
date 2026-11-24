@@ -208,6 +208,11 @@
     opacity: 1;
     animation: rgb-spin 3.6s linear infinite;
   }
+  /* Bản "luôn bật" cho đúng một điểm nhấn mỗi trang (panel hero): xoay chậm, không cần hover */
+  .rgb-edge-live::before {
+    opacity: 0.85;
+    animation: rgb-spin 9s linear infinite;
+  }
 }
 
 /* Góc xoay của dải RGB — cần @property để trình duyệt nội suy được góc */
@@ -221,6 +226,50 @@
   to {
     --rgb-angle: 360deg;
   }
+}
+
+/*
+ * Bản đồ Leaflet tông tối: đảo màu tile OpenStreetMap rồi xoay sắc độ về lại (nước vẫn xanh),
+ * marker và popup không bị đảo. Tiền tố .leaflet-container để thắng leaflet.css bất kể thứ tự nạp.
+ */
+.leaflet-container {
+  background: hsl(var(--field));
+  font-family: inherit;
+}
+.leaflet-container .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.55);
+}
+.leaflet-container .leaflet-popup-content-wrapper,
+.leaflet-container .leaflet-popup-tip {
+  background: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+  box-shadow: 0 12px 32px -8px hsl(var(--shadow-color) / 0.8);
+}
+.leaflet-container .leaflet-popup-content-wrapper {
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+}
+.leaflet-container a.leaflet-popup-close-button {
+  color: hsl(var(--muted-foreground));
+}
+.leaflet-container .leaflet-bar {
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 8px 20px -8px hsl(var(--shadow-color) / 0.8);
+}
+.leaflet-container .leaflet-bar a {
+  background-color: hsl(var(--popover));
+  border-bottom-color: hsl(var(--border));
+  color: hsl(var(--foreground));
+}
+.leaflet-container .leaflet-bar a:hover {
+  background-color: hsl(var(--accent));
+}
+.leaflet-container .leaflet-control-attribution {
+  background: hsl(var(--background) / 0.75);
+  color: hsl(var(--muted-foreground));
+}
+.leaflet-container .leaflet-control-attribution a {
+  color: hsl(var(--primary));
 }
 
 @media (prefers-reduced-motion: reduce) {

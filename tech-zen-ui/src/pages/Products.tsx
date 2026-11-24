@@ -47,7 +47,7 @@ import type {
   PagedResponse,
   ProductSearchRequest,
 } from '../types';
-import { Filter, Search, X } from 'lucide-react';
+import { Filter, Search, X, SlidersHorizontal, SearchX, ChevronDown } from 'lucide-react';
 import { useDebounce } from '../hooks/useDebounce';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { Slider } from '../components/ui/slider';
@@ -68,50 +68,71 @@ const ProductFilterSidebar = ({
   activeFilters: ProductSearchRequest;
 }) => {
   const [priceRange, setPriceRange] = useState([activeFilters.minPrice || 0, activeFilters.maxPrice || 50000000]);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const parentCategories = categories.filter(c => !c.parentCategoryId);
   const activeBrandIds = activeFilters.brandId ? [activeFilters.brandId] : [];
 
+  // Mục danh mục: vạch sáng bên trái + nền Ion nhạt khi đang chọn
+  const categoryItemClass = (active: boolean, extra: string) =>
+    cn(
+      "flex w-full items-center rounded-md px-2.5 py-1.5 text-left transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+      extra,
+      active && "bg-primary/10 text-primary shadow-[inset_2px_0_0_hsl(var(--primary))] hover:bg-primary/15 hover:text-primary"
+    );
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Lọc sản phẩm</CardTitle>
+      <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <SlidersHorizontal className="h-4 w-4 text-primary" />
+          Lọc sản phẩm
+        </CardTitle>
+        {/* Trên mobile bộ lọc thu gọn mặc định để danh sách sản phẩm không bị đẩy xuống quá xa */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="-mr-2 text-muted-foreground lg:hidden"
+          onClick={() => setMobileOpen((o) => !o)}
+          aria-expanded={mobileOpen}
+        >
+          {mobileOpen ? 'Thu gọn' : 'Mở bộ lọc'}
+          <ChevronDown className={cn("transition-transform", mobileOpen && "rotate-180")} />
+        </Button>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className={cn("space-y-6", !mobileOpen && "hidden lg:block")}>
         {/* Lọc danh mục */}
         <Accordion type="multiple" defaultValue={['categories']} className="w-full">
           <AccordionItem value="categories">
-            <AccordionTrigger className="text-base font-semibold">
+            <AccordionTrigger className="text-sm font-semibold hover:no-underline">
               Danh mục
             </AccordionTrigger>
             <AccordionContent>
-              <ScrollArea className="h-48">
-                <div className="space-y-2 pr-4">
+              <ScrollArea className="h-56">
+                <div className="space-y-0.5 pr-3">
                   {parentCategories.map(parent => (
-                    <div key={parent.id} className="space-y-2">
-                      <div 
-                        className={cn(
-                          "font-medium cursor-pointer hover:text-primary",
-                          activeFilters.categoryId === parent.id && "text-primary"
-                        )}
+                    <div key={parent.id}>
+                      <button
+                        type="button"
+                        className={categoryItemClass(activeFilters.categoryId === parent.id, "font-medium text-foreground/90")}
                         onClick={() => onFilterChange('categoryId', parent.id)}
                       >
                         {parent.name}
-                      </div>
-                      <div className="pl-4 space-y-2">
-                        {parent.children.map(child => (
-                          <div 
-                            key={child.id} 
-                            className={cn(
-                              "text-sm text-muted-foreground cursor-pointer hover:text-primary",
-                              activeFilters.categoryId === child.id && "text-primary font-medium"
-                            )}
-                            onClick={() => onFilterChange('categoryId', child.id)}
-                          >
-                            {child.name}
-                          </div>
-                        ))}
-                      </div>
+                      </button>
+                      {parent.children.length > 0 && (
+                        <div className="ml-3 space-y-0.5 border-l border-border pl-2">
+                          {parent.children.map(child => (
+                            <button
+                              type="button"
+                              key={child.id}
+                              className={categoryItemClass(activeFilters.categoryId === child.id, "text-muted-foreground")}
+                              onClick={() => onFilterChange('categoryId', child.id)}
+                            >
+                              {child.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -123,38 +144,37 @@ const ProductFilterSidebar = ({
         {/* Lọc thương hiệu */}
         <Accordion type="multiple" defaultValue={['brands']} className="w-full">
           <AccordionItem value="brands">
-            <AccordionTrigger className="text-base font-semibold">
+            <AccordionTrigger className="text-sm font-semibold hover:no-underline">
               Thương hiệu
             </AccordionTrigger>
             <AccordionContent>
               <ScrollArea className="h-48">
-                <div className="space-y-2 pr-4">
+                <div className="space-y-1 pr-3">
                   {brands.map(brand => (
-                    <div key={brand.id} className="flex items-center space-x-2">
+                    <label
+                      key={brand.id}
+                      htmlFor={`brand-${brand.id}`}
+                      className="flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors hover:bg-accent"
+                    >
                       <Checkbox
                         id={`brand-${brand.id}`}
                         checked={activeBrandIds.includes(brand.id)}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           onFilterChange('brandId', checked ? brand.id : null)
                         }
                       />
-                      <label
-                        htmlFor={`brand-${brand.id}`}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        {brand.name}
-                      </label>
-                    </div>
+                      {brand.name}
+                    </label>
                   ))}
                 </div>
               </ScrollArea>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-        
+
         {/* Lọc giá */}
         <div className="space-y-4">
-          <h3 className="text-base font-semibold">Khoảng giá</h3>
+          <h3 className="font-sans text-sm font-semibold">Khoảng giá</h3>
           <Slider
             min={0}
             max={50000000}
@@ -166,9 +186,9 @@ const ProductFilterSidebar = ({
               onFilterChange('maxPrice', value[1]);
             }}
           />
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>{priceRange[0].toLocaleString('vi-VN')}₫</span>
-            <span>{priceRange[1].toLocaleString('vi-VN')}₫</span>
+          <div className="grid grid-cols-2 gap-2 font-mono text-xs tabular-nums">
+            <span className="rounded-md border border-border bg-field px-2 py-1.5 text-center">{priceRange[0].toLocaleString('vi-VN')}₫</span>
+            <span className="rounded-md border border-border bg-field px-2 py-1.5 text-center">{priceRange[1].toLocaleString('vi-VN')}₫</span>
           </div>
         </div>
       </CardContent>
@@ -340,7 +360,7 @@ const Products = () => {
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-8">
-        <Breadcrumb className="mb-4">
+        <Breadcrumb className="mb-5">
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
@@ -362,30 +382,32 @@ const Products = () => {
           </BreadcrumbList>
         </Breadcrumb>
         
-        <h1 className="text-3xl font-bold mb-2">
+        <h1 className="mb-2 text-3xl font-bold md:text-4xl">
           {currentCategory ? currentCategory.name : "Tất cả sản phẩm"}
         </h1>
-        <p className="text-muted-foreground mb-8">
+        <p className="mb-8 text-muted-foreground">
           Khám phá các sản phẩm linh kiện máy tính chất lượng cao
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-1">
-            <ProductFilterSidebar 
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[264px_1fr]">
+          {/* Thanh lọc dính khi cuộn; tự cuộn riêng nếu cao hơn màn hình */}
+          <aside className="lg:sticky lg:top-32 lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto lg:pb-1">
+            <ProductFilterSidebar
               categories={categories}
               brands={brands}
               onFilterChange={handleFilterChange}
               activeFilters={activeFilters}
             />
-          </div>
+          </aside>
 
-          <div className="lg:col-span-3">
-            <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6 p-4 border rounded-lg bg-card">
+          <div className="min-w-0">
+            <div className="mb-4 flex flex-col items-center gap-3 rounded-xl border border-border bg-card/70 p-3 shadow-sm backdrop-blur-md md:flex-row">
               <div className="relative w-full md:flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   type="search"
                   placeholder="Tìm kiếm trong trang này..."
+                  aria-label="Tìm kiếm sản phẩm"
                   className="pl-10"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -408,22 +430,32 @@ const Products = () => {
               </Select>
             </div>
             
-            {activeFilterCount > 0 && (
-              <div className="mb-4 flex items-center gap-2">
-                <h4 className="text-sm font-medium">Đang lọc:</h4>
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-primary">
-                  <X className="h-4 w-4 mr-1" />
-                  Xóa tất cả
-                </Button>
-              </div>
-            )}
+            <div className="mb-5 flex min-h-9 flex-wrap items-center justify-between gap-3">
+              <span className="font-mono text-xs text-muted-foreground">
+                {loading
+                  ? "Đang tải…"
+                  : `Hiển thị ${pagedData?.content.length ?? 0} / ${pagedData?.totalElements ?? 0} sản phẩm`}
+              </span>
+              {activeFilterCount > 0 && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">Đang lọc:</span>
+                  <span className="rounded-md border border-primary/30 bg-primary/15 px-1.5 font-mono text-xs text-primary">
+                    {activeFilterCount}
+                  </span>
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="text-primary hover:text-primary">
+                    <X />
+                    Xóa tất cả
+                  </Button>
+                </div>
+              )}
+            </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
                 {[...Array(9)].map((_, i) => (
-                  <Card key={i}>
-                    <Skeleton className="aspect-square w-full" />
-                    <CardContent className="p-4 space-y-2">
+                  <Card key={i} className="overflow-hidden">
+                    <Skeleton className="aspect-square w-full rounded-none" />
+                    <CardContent className="space-y-2 p-4">
                       <Skeleton className="h-5 w-3/4" />
                       <Skeleton className="h-6 w-1/2" />
                     </CardContent>
@@ -432,22 +464,28 @@ const Products = () => {
               </div>
             ) : (
               <>
-                <div className="mb-4 text-sm text-muted-foreground">
-                  Hiển thị {pagedData?.content.length} / {pagedData?.totalElements} sản phẩm
-                </div>
                 {pagedData?.content.length === 0 ? (
-                  <div className="text-center py-16">
-                    <p className="text-lg text-muted-foreground">Không tìm thấy sản phẩm nào</p>
+                  <div className="flex flex-col items-center rounded-xl border border-dashed border-border bg-card/40 px-6 py-16 text-center">
+                    <span className="mb-4 grid h-14 w-14 place-items-center rounded-full border border-border bg-field text-muted-foreground">
+                      <SearchX className="h-6 w-6" />
+                    </span>
+                    <p className="text-lg font-medium text-foreground">Không tìm thấy sản phẩm nào</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Thử bỏ bớt bộ lọc hoặc đổi từ khóa tìm kiếm.</p>
+                    {activeFilterCount > 0 && (
+                      <Button variant="outline" className="mt-6" onClick={clearFilters}>
+                        Xóa bộ lọc
+                      </Button>
+                    )}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {pagedData?.content.map(product => (
-                      <ProductCard key={product.id} product={product} />
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                    {pagedData?.content.map((product, i) => (
+                      <ProductCard key={product.id} product={product} index={i} />
                     ))}
                   </div>
                 )}
-                
-                <div className="mt-8">
+
+                <div className="mt-10">
                   <PaginationControls 
                     currentPage={activeFilters.page}
                     totalPages={pagedData?.totalPages || 1}

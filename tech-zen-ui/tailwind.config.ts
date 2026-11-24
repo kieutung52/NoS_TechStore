@@ -131,7 +131,8 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        rise: "rise 0.6s var(--ease-out) calc(var(--i, 0) * 70ms) both",
+        // backwards (không phải both): hết animation thì trả transform lại cho hover:-translate-y
+        rise: "rise 0.6s var(--ease-out) calc(var(--i, 0) * 70ms) backwards",
         shimmer: "shimmer 1.6s ease-in-out infinite",
       },
     },
