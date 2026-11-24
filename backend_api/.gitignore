@@ -1,6 +1,9 @@
 target/
 *.log
 
+# Ảnh lưu local (app.storage.provider=local)
+uploads/
+
 # Biến môi trường chứa secret
 .env
 .env.local

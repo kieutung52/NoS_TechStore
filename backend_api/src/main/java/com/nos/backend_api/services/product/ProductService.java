@@ -46,7 +46,7 @@ import com.nos.backend_api.repositories.ProductImageRepository;
 import com.nos.backend_api.repositories.ProductRepository;
 import com.nos.backend_api.repositories.ProductVariantRepository;
 import com.nos.backend_api.repositories.ReviewRepository;
-import com.nos.backend_api.services._system.CloudinaryService;
+import com.nos.backend_api.services._system.ImageStorageService;
 import com.nos.backend_api.services._system.RedisService;
 
 import jakarta.persistence.criteria.Root;
@@ -64,7 +64,7 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final ReviewRepository reviewRepository;
     private final BrandRepository brandRepository;
-    private final CloudinaryService cloudinaryService;
+    private final ImageStorageService imageStorageService;
     private final RedisService redisService;
 
     // GET /products (Logic K-V cache cho phân trang giữ nguyên)
@@ -237,7 +237,7 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
         product.getVariants().forEach(v -> v.getImages().forEach(img -> {
-            cloudinaryService.delete(img.getCloudinaryPublicId());
+            imageStorageService.delete(img.getCloudinaryPublicId());
         }));
         productRepository.deleteById(id);
 
@@ -288,7 +288,7 @@ public class ProductService {
         ProductVariant variant = variantRepository.findById(variantId)
                 .filter(v -> v.getProduct().getId().equals(id))
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
-        variant.getImages().forEach(img -> cloudinaryService.delete(img.getCloudinaryPublicId()));
+        variant.getImages().forEach(img -> imageStorageService.delete(img.getCloudinaryPublicId()));
         variantRepository.delete(variant);
 
         evictProductCacheOnly(id);
@@ -305,7 +305,7 @@ public class ProductService {
                 .filter(v -> v.getProduct().getId().equals(id))
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
         String folder = "products/" + id + "/variants/" + request.getTargetId();
-        Map result = cloudinaryService.upload(file, folder);
+        Map result = imageStorageService.upload(file, folder);
         ProductImage image = ProductImage.builder()
                 .productVariant(variant)
                 .imageUrl((String) result.get("secure_url"))
@@ -328,7 +328,7 @@ public class ProductService {
                 .filter(img -> img.getProductVariant().getProduct().getId().equals(id))
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
         String folder = "products/" + id + "/variants/" + image.getProductVariant().getId();
-        Map result = cloudinaryService.replace(file, image.getCloudinaryPublicId(), folder);
+        Map result = imageStorageService.replace(file, image.getCloudinaryPublicId(), folder);
         image.setImageUrl((String) result.get("secure_url"));
         image.setAltText(request.getAltText());
         image.setThumbnail(request.getIsThumbnail() != null ? request.getIsThumbnail() : image.isThumbnail());
@@ -358,7 +358,7 @@ public class ProductService {
         ProductImage image = imageRepository.findById(imageId)
                 .filter(img -> img.getProductVariant().getProduct().getId().equals(id))
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
-        cloudinaryService.delete(image.getCloudinaryPublicId());
+        imageStorageService.delete(image.getCloudinaryPublicId());
         imageRepository.delete(image);
         evictProductCacheOnly(id);
         return ApiResponse.success(null, "Image deleted");

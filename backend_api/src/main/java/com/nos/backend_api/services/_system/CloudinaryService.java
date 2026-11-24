@@ -3,6 +3,7 @@ package com.nos.backend_api.services._system;
 import java.io.IOException;
 import java.util.Map;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,10 +13,12 @@ import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+// Tạm dừng: chỉ bật khi app.storage.provider=cloudinary (mặc định đang dùng LocalStorageService).
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class CloudinaryService {
+@ConditionalOnProperty(name = "app.storage.provider", havingValue = "cloudinary")
+public class CloudinaryService implements ImageStorageService {
 
     private final Cloudinary cloudinary;
 

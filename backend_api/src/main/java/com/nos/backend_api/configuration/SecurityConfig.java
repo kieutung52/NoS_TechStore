@@ -36,6 +36,7 @@ public class SecurityConfig {
         "/api/v1/brands/{id}",
         "/api/v1/categories",
         "/api/v1/reviews/products/{productId}",
+        "/uploads/**",
     };
 
     @Autowired

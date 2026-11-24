@@ -23,7 +23,7 @@ import com.nos.backend_api.repositories.BrandRepository;
 import com.nos.backend_api.repositories.ProductRepository;
 import com.nos.backend_api.repositories.ProductVariantRepository;
 import com.nos.backend_api.services._system.RedisService;
-import com.nos.backend_api.services._system.CloudinaryService;
+import com.nos.backend_api.services._system.ImageStorageService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BrandService {
     private final BrandRepository brandRepository;
-    private final CloudinaryService cloudinaryService;
+    private final ImageStorageService imageStorageService;
     private final ProductVariantRepository variantRepository;
     private final ProductRepository productRepository;
     private final RedisService redisService;
@@ -94,9 +94,9 @@ public class BrandService {
             String folder = "brands/" + id;
             Map result;
             if (brand.getCloudinaryPublicId() != null) {
-                result = cloudinaryService.replace(logoFile, brand.getCloudinaryPublicId(), folder);
+                result = imageStorageService.replace(logoFile, brand.getCloudinaryPublicId(), folder);
             } else {
-                result = cloudinaryService.upload(logoFile, folder);
+                result = imageStorageService.upload(logoFile, folder);
             }
             brand.setLogoUrl((String) result.get("secure_url"));
             brand.setCloudinaryPublicId((String) result.get("public_id"));
@@ -115,7 +115,7 @@ public class BrandService {
         Brand brand = brandRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
         if (brand.getCloudinaryPublicId() != null) {
-            cloudinaryService.delete(brand.getCloudinaryPublicId());
+            imageStorageService.delete(brand.getCloudinaryPublicId());
         }
         brandRepository.deleteById(id);
 
@@ -137,7 +137,7 @@ public class BrandService {
                 .build();
         if (logoFile != null && !logoFile.isEmpty()) {
             String folder = "brands";
-            Map result = cloudinaryService.upload(logoFile, folder);
+            Map result = imageStorageService.upload(logoFile, folder);
             brand.setLogoUrl((String) result.get("secure_url"));
             brand.setCloudinaryPublicId((String) result.get("public_id"));
         }

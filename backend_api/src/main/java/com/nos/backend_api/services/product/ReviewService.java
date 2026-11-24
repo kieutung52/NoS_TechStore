@@ -27,7 +27,7 @@ import com.nos.backend_api.repositories.OrderDetailRepository;
 import com.nos.backend_api.repositories.ProductRepository;
 import com.nos.backend_api.repositories.ReviewAttachmentRepository;
 import com.nos.backend_api.repositories.ReviewRepository;
-import com.nos.backend_api.services._system.CloudinaryService;
+import com.nos.backend_api.services._system.ImageStorageService;
 import com.nos.backend_api.services._system.RedisService;
 
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,7 @@ public class ReviewService {
     private final OrderDetailRepository orderDetailRepository;
     private final AccountRepository accountRepository;
     private final ProductRepository productRepository;
-    private final CloudinaryService cloudinaryService;
+    private final ImageStorageService imageStorageService;
     private final RedisService redisService;
 
     // GET /reviews/products/{productId}
@@ -89,7 +89,7 @@ public class ReviewService {
         if (attachments != null && !attachments.isEmpty()) {
             attachments.forEach(file -> {
                 String folder = "reviews/" + review.getId();
-                Map result = cloudinaryService.upload(file, folder);
+                Map result = imageStorageService.upload(file, folder);
                 AttachmentType type = file.getContentType().startsWith("video") ? AttachmentType.VIDEO : AttachmentType.IMAGE;
                 
                 ReviewAttachment att = ReviewAttachment.builder()
@@ -124,7 +124,7 @@ public class ReviewService {
     public ApiResponse<Void> deleteReview(UUID userId, Long id) {
         Review review = reviewRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
-        review.getAttachments().forEach(att -> cloudinaryService.delete(att.getCloudinaryPublicId()));
+        review.getAttachments().forEach(att -> imageStorageService.delete(att.getCloudinaryPublicId()));
         reviewRepository.delete(review);
         evictReviewCache(review.getProduct().getId()); // Sửa
         return ApiResponse.success(null, "Review deleted");

@@ -37,6 +37,11 @@ spring:
         # Tắt (false) khi chạy không có RabbitMQ: email chỉ ghi log lỗi, app vẫn chạy.
         auto-startup: ${RABBITMQ_LISTENER_ENABLED:true}
 
+  servlet:
+    multipart:
+      max-file-size: ${MAX_UPLOAD_FILE_SIZE:10MB}
+      max-request-size: ${MAX_UPLOAD_REQUEST_SIZE:50MB}
+
 server:
   port: ${SERVER_PORT:8080}
 
@@ -55,3 +60,11 @@ resend:
 app:
   email:
     from: ${APP_EMAIL_FROM:TechStore <onboarding@resend.dev>}
+  storage:
+    # local: lưu ảnh vào thư mục trên máy chủ, phục vụ ở /uploads/**
+    # cloudinary: tạm dừng (giữ code) — bật lại bằng STORAGE_PROVIDER=cloudinary + CLOUDINARY_*
+    provider: ${STORAGE_PROVIDER:local}
+    local:
+      dir: ${STORAGE_LOCAL_DIR:./uploads}
+      # URL công khai trình duyệt dùng để tải ảnh (trên server: domain của API + /uploads)
+      public-url: ${STORAGE_PUBLIC_URL:http://localhost:${server.port}/uploads}
