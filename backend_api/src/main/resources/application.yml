@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: backend_api
+  config:
+    # Nạp biến môi trường từ file local (KEY=VALUE, đã gitignore) nếu có.
+    # Trên server: đặt các biến này làm biến môi trường thật thay vì dùng file.
+    import: optional:file:.env.local[.properties]
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/techstore}
+    username: ${DB_USERNAME:techstore_app}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      minimum-idle: ${DB_POOL_MIN_IDLE:1}
+
+  jpa:
+    hibernate:
+      # Schema.sql đã lỗi thời so với entity => để Hibernate tạo/cập nhật bảng.
+      ddl-auto: ${JPA_DDL_AUTO:update}
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
+      password: ${REDIS_PASSWORD:}
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    connection-timeout: ${RABBITMQ_CONNECTION_TIMEOUT:5s}
+    listener:
+      simple:
+        # Tắt (false) khi chạy không có RabbitMQ: email chỉ ghi log lỗi, app vẫn chạy.
+        auto-startup: ${RABBITMQ_LISTENER_ENABLED:true}
+
+server:
+  port: ${SERVER_PORT:8080}
+
+jwt:
+  # HS256 => tối thiểu 32 ký tự.
+  signer-key: ${JWT_SIGNER_KEY}
+
+cloudinary:
+  cloud_name: ${CLOUDINARY_CLOUD_NAME:}
+  api_key: ${CLOUDINARY_API_KEY:}
+  api_secret: ${CLOUDINARY_API_SECRET:}
+
+resend:
+  api_key: ${RESEND_API_KEY:}
+
+app:
+  email:
+    from: ${APP_EMAIL_FROM:TechStore <onboarding@resend.dev>}

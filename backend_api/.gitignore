@@ -1,0 +1,12 @@
+target/
+*.log
+
+# Biến môi trường chứa secret
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+*.iml
+.vscode/

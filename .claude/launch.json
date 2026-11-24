@@ -1,0 +1,27 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend",
+      "runtimeExecutable": "java",
+      "runtimeArgs": [
+        "-Xms64m",
+        "-Xmx384m",
+        "-Xss512k",
+        "-XX:+UseSerialGC",
+        "-XX:TieredStopAtLevel=1",
+        "-XX:ReservedCodeCacheSize=64m",
+        "-jar",
+        "backend_api/target/backend_api-0.0.1-SNAPSHOT.jar",
+        "--spring.config.import=optional:file:backend_api/.env.local[.properties]"
+      ],
+      "port": 8081
+    },
+    {
+      "name": "frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "tech-zen-ui"],
+      "port": 8080
+    }
+  ]
+}

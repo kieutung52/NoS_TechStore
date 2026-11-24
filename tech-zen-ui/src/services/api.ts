@@ -1,6 +1,7 @@
 import type { ApiResponse, RefreshTokenRequest, AuthResponse } from '../types';
 
-const API_BASE_URL = 'https://api-techstore.kieutung.online/api/v1';
+// Đặt VITE_API_BASE_URL trong .env.local khi chạy local; mặc định trỏ server production.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api-techstore.kieutung.online/api/v1';
 
 let isRefreshing = false;
 let failedQueue: Array<{ resolve: (value: unknown) => void; reject: (reason?: unknown) => void }> = [];
