@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { Button } from '../components/ui/button';
+import { Button, buttonVariants } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -10,7 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { useAuth } from '../hooks/useAuth';
 import { useWallet } from '../hooks/useWallet';
 import { toast } from '../hooks/use-toast';
-import { User, Wallet, MapPin, Settings, LogOut, Edit, Trash2, Plus, CreditCard, History, KeyRound, Save, Loader2, Calendar, Mail } from 'lucide-react';
+import { User, Wallet, MapPin, Settings, LogOut, Edit, Trash2, Plus, CreditCard, History, KeyRound, Save, Loader2, Calendar, Mail, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { Avatar, AvatarFallback } from '../components/ui/avatar';
+import { cn } from '../lib/utils';
 import { userService } from '../services/userService';
 import { addressService } from '../services/addressService';
 import { walletService } from '../services/walletService';
@@ -69,9 +71,9 @@ const ProfileTab = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Thông tin cá nhân</CardTitle>
+        <CardTitle className="text-lg">Thông tin cá nhân</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="fullName">Họ và tên</Label>
           <Input
@@ -96,7 +98,7 @@ const ProfileTab = () => {
             disabled={!isEditing}
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 border-t border-border pt-5">
           {isEditing ? (
             <>
               <Button onClick={handleUpdate} disabled={loading}>
@@ -107,7 +109,7 @@ const ProfileTab = () => {
               <Button variant="outline" onClick={() => setIsEditing(false)}>Hủy</Button>
             </>
           ) : (
-            <Button onClick={() => setIsEditing(true)}>
+            <Button variant="outline" onClick={() => setIsEditing(true)}>
               <Edit className="mr-2 h-4 w-4" />
               Chỉnh sửa
             </Button>
@@ -179,17 +181,17 @@ const WalletTab = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Kích hoạt ví</CardTitle>
+          <CardTitle className="text-lg">Kích hoạt ví</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">Bạn cần tạo mã PIN 6 số để kích hoạt ví.</p>
           <div className="space-y-2">
             <Label htmlFor="pin">Mã PIN (6 số)</Label>
-            <Input id="pin" type="password" maxLength={6} value={pin} onChange={(e) => setPin(e.target.value)} />
+            <Input id="pin" type="password" inputMode="numeric" maxLength={6} value={pin} onChange={(e) => setPin(e.target.value)} className="max-w-[12rem] font-mono tracking-[0.4em]" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPin">Xác nhận Mã PIN</Label>
-            <Input id="confirmPin" type="password" maxLength={6} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} />
+            <Input id="confirmPin" type="password" inputMode="numeric" maxLength={6} value={confirmPin} onChange={(e) => setConfirmPin(e.target.value)} className="max-w-[12rem] font-mono tracking-[0.4em]" />
           </div>
           <Button onClick={handleActivate} disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -204,32 +206,51 @@ const WalletTab = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ví điện tử</CardTitle>
+        <CardTitle className="text-lg">Ví điện tử</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground p-6 rounded-lg">
-          <div className="text-sm opacity-90 mb-2">Số dư khả dụng</div>
-          <div className="text-3xl font-bold">{wallet.balance.toLocaleString('vi-VN')}₫</div>
+      <CardContent className="space-y-5">
+        {/* Thẻ số dư: viền gradient Ion → Plasma, như một tấm thẻ phát sáng */}
+        <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-[linear-gradient(135deg,hsl(var(--primary)/0.22),hsl(var(--plasma)/0.18)_60%,hsl(var(--card)))] p-6 shadow-glow-sm">
+          <div aria-hidden="true" className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[radial-gradient(closest-side,hsl(var(--plasma)/0.35),transparent)] blur-xl" />
+          <div className="relative">
+            <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.16em] text-foreground/70">
+              <span>Số dư khả dụng</span>
+              <Wallet className="h-4 w-4" />
+            </div>
+            <div className="mt-3 font-display text-4xl font-semibold tabular-nums tracking-tight">
+              {wallet.balance.toLocaleString('vi-VN')}
+              <span className="ml-1 text-xl text-foreground/60">₫</span>
+            </div>
+          </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <Button onClick={() => navigate('/wallet/deposit')}><CreditCard className="mr-2 h-4 w-4" /> Nạp tiền</Button>
+        <div className="grid grid-cols-2 gap-3">
+          <Button variant="glow" onClick={() => navigate('/wallet/deposit')}><CreditCard className="mr-2 h-4 w-4" /> Nạp tiền</Button>
           <Button variant="outline"><History className="mr-2 h-4 w-4" /> Lịch sử giao dịch</Button>
         </div>
         <Separator />
-        <h4 className="font-semibold">Giao dịch gần đây</h4>
-        <div className="space-y-2">
-          {transactions.length > 0 ? transactions.map(tx => (
-            <div key={tx.id} className="flex justify-between items-center text-sm">
-              <div>
-                <p className="font-medium">{tx.description}</p>
-                <p className="text-xs text-muted-foreground">{new Date(tx.transactionDate).toLocaleString('vi-VN')}</p>
-              </div>
-              <span className={tx.amount > 0 ? 'text-green-600' : 'text-destructive'}>
-                {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('vi-VN')}₫
-              </span>
-            </div>
-          )) : <p className="text-sm text-muted-foreground">Không có giao dịch nào.</p>}
-        </div>
+        <h4 className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Giao dịch gần đây</h4>
+        <ul className="divide-y divide-border">
+          {transactions.length > 0 ? transactions.map(tx => {
+            const incoming = tx.amount > 0;
+            return (
+              <li key={tx.id} className="flex items-center gap-3 py-3 text-sm first:pt-0 last:pb-0">
+                <span className={cn(
+                  "grid h-9 w-9 shrink-0 place-items-center rounded-lg border",
+                  incoming ? "border-success/30 bg-success/10 text-success" : "border-destructive/30 bg-destructive/10 text-destructive"
+                )}>
+                  {incoming ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{tx.description}</p>
+                  <p className="font-mono text-[11px] text-muted-foreground">{new Date(tx.transactionDate).toLocaleString('vi-VN')}</p>
+                </div>
+                <span className={cn("font-mono text-sm tabular-nums", incoming ? 'text-success' : 'text-destructive')}>
+                  {incoming ? '+' : ''}{tx.amount.toLocaleString('vi-VN')}₫
+                </span>
+              </li>
+            );
+          }) : <li className="text-sm text-muted-foreground">Không có giao dịch nào.</li>}
+        </ul>
       </CardContent>
     </Card>
   );
@@ -287,36 +308,47 @@ const AddressTab = () => {
   return (
     <>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Địa chỉ giao hàng</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-lg">Địa chỉ giao hàng</CardTitle>
           {/* TODO: Thêm logic mở modal/trang tạo địa chỉ */}
-          <Button size="sm"><Plus className="mr-2 h-4 w-4" /> Thêm địa chỉ mới</Button>
+          <Button size="sm" variant="outline"><Plus className="mr-2 h-4 w-4" /> Thêm địa chỉ mới</Button>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {loading && <Skeleton className="h-20 w-full" />}
           {!loading && addresses.length === 0 && (
-            <p className="text-muted-foreground">Bạn chưa có địa chỉ giao hàng nào.</p>
+            <div className="flex flex-col items-center rounded-lg border border-dashed border-border px-6 py-10 text-center">
+              <MapPin className="mb-3 h-8 w-8 text-muted-foreground" />
+              <p className="text-muted-foreground">Bạn chưa có địa chỉ giao hàng nào.</p>
+            </div>
           )}
           {addresses.map(addr => (
-            <Card key={addr.id} className={addr.isDefault ? "border-primary" : ""}>
+            <Card
+              key={addr.id}
+              className={cn(
+                "bg-field/40 shadow-none",
+                addr.isDefault && "border-primary/50 bg-primary/5 shadow-[inset_2px_0_0_hsl(var(--primary))]"
+              )}
+            >
               <CardContent className="p-4">
                 <div className="flex justify-between items-start">
-                  <div>
-                    <span className="font-semibold">{addr.recipientFullName}</span>
-                    {addr.isDefault && <Badge className="ml-2">Mặc định</Badge>}
-                    <p className="text-sm text-muted-foreground">{addr.recipientPhone}</p>
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold">{addr.recipientFullName}</span>
+                      {addr.isDefault && <Badge>Mặc định</Badge>}
+                    </div>
+                    <p className="font-mono text-xs text-muted-foreground">{addr.recipientPhone}</p>
                     <p className="text-sm text-muted-foreground">{`${addr.note || ''} ${addr.district}, ${addr.city}, ${addr.country}`}</p>
                   </div>
                   <div className="flex gap-1">
                     {/* TODO: Thêm logic mở modal/trang sửa địa chỉ */}
-                    <Button variant="ghost" size="icon" className="h-8 w-8"><Edit className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setAddressToDelete(addr); setShowDeleteDialog(true); }}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Sửa địa chỉ"><Edit className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10" aria-label="Xóa địa chỉ" onClick={() => { setAddressToDelete(addr); setShowDeleteDialog(true); }}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
                 </div>
                 {!addr.isDefault && (
-                  <Button variant="outline" size="sm" className="mt-2" onClick={() => handleSetDefault(addr.id)}>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={() => handleSetDefault(addr.id)}>
                     Đặt làm mặc định
                   </Button>
                 )}
@@ -337,7 +369,7 @@ const AddressTab = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleDelete} className={buttonVariants({ variant: "destructive" })}>
               Xóa
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -354,25 +386,35 @@ const SettingsTab = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cài đặt tài khoản</CardTitle>
+        <CardTitle className="text-lg">Cài đặt tài khoản</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <h3 className="font-semibold">Mật khẩu</h3>
-          <p className="text-sm text-muted-foreground">Đặt lại mật khẩu của bạn.</p>
+      <CardContent className="divide-y divide-border">
+        <div className="flex flex-col gap-4 pb-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-primary/25 bg-primary/10 text-primary">
+              <KeyRound className="h-5 w-5" />
+            </span>
+            <div>
+              <h3 className="font-sans font-semibold">Mật khẩu</h3>
+              <p className="text-sm text-muted-foreground">Đặt lại mật khẩu của bạn.</p>
+            </div>
+          </div>
           <Button variant="outline" onClick={() => navigate('/forgot-password')}>
-            <KeyRound className="mr-2 h-4 w-4" />
             Đổi mật khẩu
           </Button>
         </div>
-        
-        <Separator />
-        
-        <div className="space-y-2">
-          <h3 className="font-semibold">Đăng xuất</h3>
-          <p className="text-sm text-muted-foreground">Đăng xuất khỏi tài khoản của bạn trên thiết bị này.</p>
+
+        <div className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-destructive/30 bg-destructive/10 text-destructive">
+              <LogOut className="h-5 w-5" />
+            </span>
+            <div>
+              <h3 className="font-sans font-semibold">Đăng xuất</h3>
+              <p className="text-sm text-muted-foreground">Đăng xuất khỏi tài khoản của bạn trên thiết bị này.</p>
+            </div>
+          </div>
           <Button variant="destructive" onClick={logout}>
-            <LogOut className="mr-2 h-4 w-4" />
             Đăng xuất
           </Button>
         </div>
@@ -382,27 +424,68 @@ const SettingsTab = () => {
 };
 
 // --- Component Chính ---
+const tabItems = [
+  { value: "profile", label: "Hồ sơ", Icon: User },
+  { value: "wallet", label: "Ví", Icon: Wallet },
+  { value: "addresses", label: "Địa chỉ", Icon: MapPin },
+  { value: "settings", label: "Cài đặt", Icon: Settings },
+];
+
+const getInitials = (name: string) => {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
 const Profile = () => {
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Tài khoản của tôi</h1>
 
-          <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="profile"><User className="h-4 w-4 mr-2" />Hồ sơ</TabsTrigger>
-              <TabsTrigger value="wallet"><Wallet className="h-4 w-4 mr-2" />Ví</TabsTrigger>
-              <TabsTrigger value="addresses"><MapPin className="h-4 w-4 mr-2" />Địa chỉ</TabsTrigger>
-              <TabsTrigger value="settings"><Settings className="h-4 w-4 mr-2" />Cài đặt</TabsTrigger>
-            </TabsList>
+      <main className="flex-1 container mx-auto px-4 py-10">
+        <div className="mx-auto max-w-5xl">
+          <h1 className="mb-8 text-3xl font-bold md:text-4xl">Tài khoản của tôi</h1>
 
-            <TabsContent value="profile"><ProfileTab /></TabsContent>
-            <TabsContent value="wallet"><WalletTab /></TabsContent>
-            <TabsContent value="addresses"><AddressTab /></TabsContent>
-            <TabsContent value="settings"><SettingsTab /></TabsContent>
+          {/* Desktop: danh mục tab dọc bên trái kèm thẻ người dùng; mobile: tab ngang */}
+          <Tabs defaultValue="profile" className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[250px_1fr]">
+            <div className="space-y-3 lg:sticky lg:top-32">
+              {user && (
+                <Card className="hidden lg:block">
+                  <CardContent className="flex items-center gap-3 p-4">
+                    <Avatar className="h-11 w-11 ring-1 ring-primary/40">
+                      <AvatarFallback className="bg-[linear-gradient(135deg,hsl(var(--primary)/0.35),hsl(var(--plasma)/0.35))] font-display text-sm font-semibold text-foreground">
+                        {getInitials(user.fullName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold">{user.fullName}</p>
+                      <p className="truncate font-mono text-[11px] text-muted-foreground">{user.email}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              <TabsList className="grid h-auto w-full grid-cols-4 lg:flex lg:flex-col lg:items-stretch lg:gap-1 lg:bg-card lg:p-2">
+                {tabItems.map(({ value, label, Icon }) => (
+                  <TabsTrigger
+                    key={value}
+                    value={value}
+                    className="gap-2 lg:justify-start lg:px-3 lg:py-2.5 lg:data-[state=active]:bg-primary/10 lg:data-[state=active]:text-primary lg:data-[state=active]:shadow-[inset_2px_0_0_hsl(var(--primary))]"
+                  >
+                    <Icon className="hidden h-4 w-4 shrink-0 sm:block" />
+                    {label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
+
+            <div className="min-w-0">
+              <TabsContent value="profile" className="mt-0"><ProfileTab /></TabsContent>
+              <TabsContent value="wallet" className="mt-0"><WalletTab /></TabsContent>
+              <TabsContent value="addresses" className="mt-0"><AddressTab /></TabsContent>
+              <TabsContent value="settings" className="mt-0"><SettingsTab /></TabsContent>
+            </div>
           </Tabs>
         </div>
       </main>

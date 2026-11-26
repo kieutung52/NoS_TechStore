@@ -16,8 +16,7 @@ export const OrderStatusBadge = ({ status }: { status: OrderStatus }) => {
 
   switch (status) {
     case OrderStatus.PENDING:
-      variant = 'secondary';
-      className = 'bg-warning text-warning-foreground hover:bg-warning/80';
+      variant = 'warning';
       text = 'Chờ xử lý';
       Icon = Clock;
       break;
@@ -27,13 +26,13 @@ export const OrderStatusBadge = ({ status }: { status: OrderStatus }) => {
       Icon = Archive;
       break;
     case OrderStatus.SHIPPED:
-      variant = 'default';
+      // Plasma: phân biệt "đang giao" với "đang xử lý" (Ion)
+      className = 'border-plasma/30 bg-plasma/15 text-plasma hover:bg-plasma/20';
       text = 'Đang giao';
       Icon = Truck;
       break;
     case OrderStatus.DELIVERED:
-      variant = 'secondary';
-      className = 'bg-success text-success-foreground hover:bg-success/80';
+      variant = 'success';
       text = 'Đã giao';
       Icon = CheckCircle;
       break;
@@ -86,7 +85,7 @@ export const ProductStatusBadge = ({
   }
 
   return (
-    <Badge className="flex items-center gap-1.5 bg-success text-success-foreground hover:bg-success/80">
+    <Badge variant="success" className="flex items-center gap-1.5">
       <CheckCircle className="h-3.5 w-3.5" />
       <span>Đang bán</span>
     </Badge>
@@ -99,7 +98,7 @@ export const ProductStatusBadge = ({
 export const UserStatusBadge = ({ isActive }: { isActive: boolean }) => {
   if (isActive) {
     return (
-      <Badge className="flex items-center gap-1.5 bg-success text-success-foreground hover:bg-success/80">
+      <Badge variant="success" className="flex items-center gap-1.5">
         <CheckCircle className="h-3.5 w-3.5" />
         <span>Hoạt động</span>
       </Badge>

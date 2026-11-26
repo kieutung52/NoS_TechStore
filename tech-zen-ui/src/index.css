@@ -271,6 +271,10 @@
 .leaflet-container .leaflet-control-attribution a {
   color: hsl(var(--primary));
 }
+/* Bảng chỉ đường của leaflet-routing-machine: code đặt show:false nhưng chưa nạp CSS của thư viện nên còn sót một ô trống 32px ở góc bản đồ */
+.leaflet-container .leaflet-routing-container {
+  display: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,

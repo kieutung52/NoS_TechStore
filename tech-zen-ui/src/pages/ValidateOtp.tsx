@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { authService } from '@/services/authService';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
+import { AuthShell } from '@/components/AuthShell';
 import {
   InputOTP,
   InputOTPGroup,
@@ -79,50 +80,41 @@ const ValidateOtp = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary">
-              <ShieldCheck className="h-6 w-6 text-primary-foreground" />
-            </div>
-          </div>
-          <CardTitle className="text-2xl font-bold text-center">Xác thực OTP</CardTitle>
-          <CardDescription className="text-center">
-            Mã OTP (6 số) đã được gửi đến: <br /> <span className="font-medium text-foreground">{email}</span>
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-6 flex flex-col items-center">
-            <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-              <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-              </InputOTPGroup>
-              <InputOTPSeparator />
-              <InputOTPGroup>
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
+    <AuthShell
+      icon={ShieldCheck}
+      title="Xác thực OTP"
+      description={<>Mã OTP (6 số) đã được gửi đến: <br /> <span className="font-medium text-foreground">{email}</span></>}
+    >
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-6 flex flex-col items-center">
+          <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+            <InputOTPGroup>
+              <InputOTPSlot index={0} />
+              <InputOTPSlot index={1} />
+              <InputOTPSlot index={2} />
+            </InputOTPGroup>
+            <InputOTPSeparator />
+            <InputOTPGroup>
+              <InputOTPSlot index={3} />
+              <InputOTPSlot index={4} />
+              <InputOTPSlot index={5} />
+            </InputOTPGroup>
+          </InputOTP>
 
-            <Button type="submit" className="w-full" disabled={loading || otp.length < 6}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {loading ? 'Đang xác thực...' : 'Xác thực'}
-            </Button>
+          <Button type="submit" className="w-full" disabled={loading || otp.length < 6}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {loading ? 'Đang xác thực...' : 'Xác thực'}
+          </Button>
 
-            <Button variant="ghost" className="w-full" asChild>
-              <Link to="/login">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Quay lại Đăng nhập
-              </Link>
-            </Button>
-          </CardContent>
-        </form>
-      </Card>
-    </div>
+          <Button variant="ghost" className="w-full" asChild>
+            <Link to="/login">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Quay lại Đăng nhập
+            </Link>
+          </Button>
+        </CardContent>
+      </form>
+    </AuthShell>
   );
 };
 

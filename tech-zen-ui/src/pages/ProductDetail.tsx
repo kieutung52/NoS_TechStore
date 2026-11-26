@@ -25,6 +25,7 @@ import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
 import { toast } from '../hooks/use-toast';
 import { cn } from '../lib/utils';
+import { thumbnailIndex } from '../lib/productImage';
 
 const Stars = ({ value, className, size = "h-4 w-4" }: { value: number; className?: string; size?: string }) => (
   <div className={cn("flex items-center gap-0.5", className)} role="img" aria-label={`${value} trên 5 sao`}>
@@ -123,7 +124,7 @@ const ProductDetail = () => {
 
           if (response.data.variants && response.data.variants.length > 0) {
             setSelectedVariant(response.data.variants[0]);
-            setActiveImage(0);
+            setActiveImage(thumbnailIndex(response.data.variants[0].images));
           }
         } else {
           navigate('/not-found');
@@ -141,7 +142,7 @@ const ProductDetail = () => {
 
   const handleSelectVariant = (variant: ProductVariantResponse) => {
     setSelectedVariant(variant);
-    setActiveImage(0);
+    setActiveImage(thumbnailIndex(variant.images));
   };
 
   const handleAddToCart = () => {

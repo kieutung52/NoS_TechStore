@@ -14,7 +14,9 @@ import { useWallet } from '../hooks/useWallet';
 import { orderService } from '../services/orderService';
 import { addressService } from '../services/addressService';
 import { toast } from '../hooks/use-toast';
-import { Wallet, Package, AlertCircle, MapPin, Plus, Loader2, Badge } from 'lucide-react';
+import { Wallet, Package, AlertCircle, MapPin, Plus, Loader2, Check, CreditCard } from 'lucide-react';
+import { Badge } from '../components/ui/badge';
+import { cn } from '../lib/utils';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { AddressSearch } from '../components/AddressSearch';
 import { NominatimResult } from '../services/mapService';
@@ -181,20 +183,51 @@ const Checkout = () => {
     }
   };
 
+  const steps = ['Giỏ hàng', 'Thanh toán', 'Hoàn tất'];
+  const currentStep = 1;
+
+  // Ô lựa chọn (địa chỉ, phương thức): sáng viền + vạch Ion bên trái khi được chọn
+  const optionClass =
+    "flex items-start gap-3 rounded-lg border border-border bg-field/40 p-4 transition-colors hover:border-input hover:bg-accent/40 has-[[data-state=checked]]:border-primary/60 has-[[data-state=checked]]:bg-primary/5 has-[[data-state=checked]]:shadow-[inset_2px_0_0_hsl(var(--primary))]";
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Thanh toán</h1>
+      <main className="flex-1 container mx-auto px-4 py-10">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <h1 className="text-3xl font-bold md:text-4xl">Thanh toán</h1>
+          {/* Các bước mua hàng: thứ tự là thông tin thật nên được đánh số */}
+          <ol className="flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em]">
+            {steps.map((step, i) => (
+              <li key={step} className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    "grid h-6 w-6 place-items-center rounded-full border text-[10px]",
+                    i < currentStep && "border-success/40 bg-success/15 text-success",
+                    i === currentStep && "border-primary bg-primary/15 text-primary shadow-glow-sm",
+                    i > currentStep && "border-border text-muted-foreground"
+                  )}
+                >
+                  {i < currentStep ? <Check className="h-3 w-3" /> : i + 1}
+                </span>
+                <span className={i === currentStep ? "text-foreground" : "sr-only text-muted-foreground sm:not-sr-only"}>{step}</span>
+                {i < steps.length - 1 && <span aria-hidden="true" className="h-px w-4 bg-border sm:w-6" />}
+              </li>
+            ))}
+          </ol>
+        </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3">
             {/* Cột trái: Thông tin */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="space-y-6 lg:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Thông tin giao hàng</CardTitle>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    Thông tin giao hàng
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* DANH SÁCH ĐỊA CHỈ ĐÃ LƯU */}
@@ -206,11 +239,14 @@ const Checkout = () => {
                     }}
                   >
                     {addresses.map(addr => (
-                      <div key={addr.id} className="flex items-start space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
-                        <RadioGroupItem value={addr.id.toString()} id={`addr-${addr.id}`} />
-                        <Label htmlFor={`addr-${addr.id}`} className="flex-1 cursor-pointer">
-                          <div className="font-semibold">{addr.recipientFullName} {addr.isDefault && <Badge className="ml-2">Mặc định</Badge>}</div>
-                          <p className="text-sm text-muted-foreground">{addr.recipientPhone}</p>
+                      <div key={addr.id} className={optionClass}>
+                        <RadioGroupItem value={addr.id.toString()} id={`addr-${addr.id}`} className="mt-0.5" />
+                        <Label htmlFor={`addr-${addr.id}`} className="flex-1 cursor-pointer space-y-1 font-normal">
+                          <div className="flex flex-wrap items-center gap-2 font-semibold">
+                            {addr.recipientFullName}
+                            {addr.isDefault && <Badge>Mặc định</Badge>}
+                          </div>
+                          <p className="font-mono text-xs text-muted-foreground">{addr.recipientPhone}</p>
                           <p className="text-sm text-muted-foreground">{`${addr.note || ''} ${addr.district}, ${addr.city}`}</p>
                         </Label>
                       </div>
@@ -220,40 +256,43 @@ const Checkout = () => {
                   {/* NÚT THÊM ĐỊA CHỈ MỚI */}
                   <Button
                     type="button"
-                    variant="outline"
-                    className="w-full"
+                    variant="ghost"
+                    className={cn(
+                      "w-full border border-dashed border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
+                      showNewAddressForm && "border-primary/50 text-foreground"
+                    )}
                     onClick={() => {
                       setShowNewAddressForm(true);
                       setSelectedAddressId(null);
                     }}
                   >
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Plus />
                     Thêm địa chỉ mới
                   </Button>
 
                   {/* FORM ĐỊA CHỈ MỚI (ẨN/HIỆN) */}
                   {showNewAddressForm && (
-                    <div className="space-y-4 pt-4 border-t">
+                    <div className="space-y-4 rounded-lg border border-border bg-field/40 p-4 duration-300 animate-in fade-in slide-in-from-top-2">
                       <div className="space-y-2">
                         <Label>Tìm kiếm địa chỉ (Demo)</Label>
                         <AddressSearch onAddressSelect={handleAddressSelect} />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-2 md:col-span-1">
+                        <div className="col-span-2 space-y-2 md:col-span-1">
                           <Label htmlFor="recipientFullName">Họ và tên</Label>
                           <Input id="recipientFullName" value={addressFormData.recipientFullName} onChange={handleFormChange} required={showNewAddressForm} />
                         </div>
-                        <div className="col-span-2 md:col-span-1">
+                        <div className="col-span-2 space-y-2 md:col-span-1">
                           <Label htmlFor="recipientPhone">Số điện thoại</Label>
                           <Input id="recipientPhone" type="tel" value={addressFormData.recipientPhone} onChange={handleFormChange} required={showNewAddressForm} />
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <div>
+                        <div className="space-y-2">
                           <Label htmlFor="district">Quận/Huyện</Label>
                           <Input id="district" value={addressFormData.district} onChange={handleFormChange} required={showNewAddressForm} />
                         </div>
-                        <div>
+                        <div className="space-y-2">
                           <Label htmlFor="city">Tỉnh/Thành phố</Label>
                           <Input id="city" value={addressFormData.city} onChange={handleFormChange} required={showNewAddressForm} />
                         </div>
@@ -269,19 +308,24 @@ const Checkout = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Phương thức thanh toán</CardTitle>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                    Phương thức thanh toán
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <RadioGroup value={paymentMethodId.toString()} onValueChange={(val) => setPaymentMethodId(parseInt(val))}>
                     {paymentMethods.map(pm => (
-                      <div key={pm.id} className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
+                      <div key={pm.id} className={cn(optionClass, "items-center")}>
                         <RadioGroupItem value={pm.id.toString()} id={`pm-${pm.id}`} />
-                        <Label htmlFor={`pm-${pm.id}`} className="flex items-center gap-3 cursor-pointer flex-1">
-                          <pm.icon className="h-5 w-5 text-primary" />
+                        <Label htmlFor={`pm-${pm.id}`} className="flex flex-1 cursor-pointer items-center gap-3 font-normal">
+                          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-primary/25 bg-primary/10 text-primary">
+                            <pm.icon className="h-4 w-4" />
+                          </span>
                           <div>
                             <div className="font-semibold">{pm.methodName}</div>
                             {pm.id === 2 && (
-                              <div className="text-sm text-muted-foreground">
+                              <div className="font-mono text-xs text-muted-foreground">
                                 Số dư: {wallet?.balance.toLocaleString('vi-VN')}₫
                               </div>
                             )}
@@ -290,15 +334,17 @@ const Checkout = () => {
                       </div>
                     ))}
                     {isWalletPayment && (
-                      <div className="space-y-2 pl-4 pt-4 border-t">
+                      <div className="space-y-2 border-t border-border pt-4">
                         <Label htmlFor="pin">Mã PIN (6 số)</Label>
                         <Input
                           id="pin"
                           type="password"
+                          inputMode="numeric"
                           value={pin}
                           onChange={(e) => setPin(e.target.value)}
                           placeholder="••••••"
                           maxLength={6}
+                          className="max-w-[12rem] font-mono tracking-[0.4em]"
                         />
                       </div>
                     )}
@@ -308,45 +354,60 @@ const Checkout = () => {
             </div>
 
             {/* Cột phải: Tóm tắt */}
-            <div className="lg:col-span-1">
-              <Card className="sticky top-24">
+            <div className="lg:sticky lg:top-32 lg:col-span-1">
+              <Card className="relative overflow-hidden shadow-lg">
+                <div aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,hsl(var(--primary)),hsl(var(--plasma)),transparent)]" />
                 <CardHeader>
-                  <CardTitle>Đơn hàng</CardTitle>
+                  <CardTitle className="flex items-center justify-between text-lg">
+                    Đơn hàng
+                    <span className="font-mono text-xs font-normal text-muted-foreground">{cart.totalItems} sản phẩm</span>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                  <ul className="max-h-60 space-y-3 overflow-y-auto pr-1">
                     {cart.items.map((item) => (
-                      <div key={item.productVariantId} className="flex justify-between text-sm">
-                        <span className="flex-1 pr-2">
-                          {item.productName} (x{item.quantity})
+                      <li key={item.productVariantId} className="flex items-center gap-3 text-sm">
+                        <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-field">
+                          {item.imageUrls[0] ? (
+                            <img src={item.imageUrls[0]} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <Package className="h-5 w-5 text-muted-foreground" />
+                          )}
                         </span>
-                        <span className="font-medium">
+                        <span className="min-w-0 flex-1">
+                          <span className="line-clamp-1">{item.productName}</span>
+                          <span className="font-mono text-xs text-muted-foreground">x{item.quantity}</span>
+                        </span>
+                        <span className="font-mono text-xs tabular-nums">
                           {(item.price * item.quantity).toLocaleString('vi-VN')}₫
                         </span>
-                      </div>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
 
                   <Separator />
 
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Tạm tính</span>
-                      <span>{totalAmount.toLocaleString('vi-VN')}₫</span>
+                      <span className="font-mono tabular-nums">{totalAmount.toLocaleString('vi-VN')}₫</span>
                     </div>
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Phí vận chuyển</span>
                       {/* BE hard-code 5.00 */}
-                      <span className="font-medium">{Number(5).toLocaleString('vi-VN')}₫</span>
+                      <span className="font-mono tabular-nums">{Number(5).toLocaleString('vi-VN')}₫</span>
                     </div>
                   </div>
 
                   <Separator />
 
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>Tổng cộng</span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="font-semibold">Tổng cộng</span>
                     {/* BE tự cộng shippingFee */}
-                    <span className="text-primary">{(totalAmount + 5).toLocaleString('vi-VN')}₫</span>
+                    <span className="font-display text-2xl font-semibold tabular-nums">
+                      {(totalAmount + 5).toLocaleString('vi-VN')}
+                      <span className="ml-0.5 text-base text-muted-foreground">₫</span>
+                    </span>
                   </div>
 
                   {insufficientFunds && (
@@ -366,8 +427,8 @@ const Checkout = () => {
                     </Alert>
                   )}
 
-                  <Button type="submit" className="w-full" size="lg" disabled={loading || insufficientFunds}>
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Button type="submit" variant="glow" className="w-full" size="lg" disabled={loading || insufficientFunds}>
+                    {loading && <Loader2 className="animate-spin" />}
                     {loading ? 'Đang xử lý...' : 'Đặt hàng'}
                   </Button>
                 </CardContent>

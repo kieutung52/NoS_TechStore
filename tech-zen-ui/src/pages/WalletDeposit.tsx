@@ -10,6 +10,7 @@ import { useWallet } from '../hooks/useWallet';
 import { toast } from '../hooks/use-toast';
 import { Wallet, ArrowLeft, Loader2 } from 'lucide-react';
 import type { DepositRequest } from '../types';
+import { cn } from '../lib/utils';
 
 const WalletDeposit = () => {
   const navigate = useNavigate();
@@ -52,68 +53,85 @@ const WalletDeposit = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <Button 
-            variant="ghost" 
+
+      <main className="flex-1 container mx-auto px-4 py-10">
+        <div className="mx-auto max-w-2xl">
+          <Button
+            variant="ghost"
             onClick={() => navigate('/profile')}
-            className="mb-6"
+            className="mb-6 text-muted-foreground"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft />
             Quay lại
           </Button>
 
-          <Card>
+          <Card className="relative overflow-hidden shadow-lg">
+            <div aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,hsl(var(--primary)),hsl(var(--plasma)),transparent)]" />
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                  <Wallet className="h-6 w-6 text-primary" />
+                <div className="grid h-12 w-12 place-items-center rounded-xl border border-primary/30 bg-primary/10 text-primary shadow-glow-sm">
+                  <Wallet className="h-6 w-6" />
                 </div>
-                <div>
-                  <CardTitle>Nạp tiền vào ví</CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Số dư hiện tại: {wallet?.balance.toLocaleString('vi-VN')}₫
-                  </p>
-                </div>
+                <CardTitle className="text-xl">Nạp tiền vào ví</CardTitle>
+              </div>
+              <div className="mt-4 rounded-lg border border-border bg-field/60 px-4 py-3">
+                <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">Số dư hiện tại</p>
+                <p className="font-display text-2xl font-semibold tabular-nums">
+                  {wallet?.balance.toLocaleString('vi-VN')}
+                  <span className="ml-0.5 text-base text-muted-foreground">₫</span>
+                </p>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="amount">Số tiền nạp</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  placeholder="Nhập số tiền"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
+                <div className="relative">
+                  <Input
+                    id="amount"
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="Nhập số tiền"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="h-12 pr-10 font-mono text-lg [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  />
+                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">₫</span>
+                </div>
               </div>
 
               <div>
                 <Label className="mb-3 block">Chọn nhanh</Label>
-                <div className="grid grid-cols-3 gap-3">
-                  {quickAmounts.map((amt) => (
-                    <Button
-                      key={amt}
-                      variant={amount === amt.toString() ? "default" : "outline"}
-                     
-                      onClick={() => setAmount(amt.toString())}
-                      className="h-auto py-3"
-                    >
-                      {amt.toLocaleString('vi-VN')}₫
-                    </Button>
-                  ))}
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {quickAmounts.map((amt) => {
+                    const selected = amount === amt.toString();
+                    return (
+                      <button
+                        key={amt}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => setAmount(amt.toString())}
+                        className={cn(
+                          "rounded-lg border px-3 py-3 font-mono text-sm tabular-nums transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          selected
+                            ? "border-primary bg-primary/10 text-primary shadow-glow-sm"
+                            : "border-input bg-card/40 hover:border-primary/60 hover:bg-primary/5"
+                        )}
+                      >
+                        {amt.toLocaleString('vi-VN')}₫
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <Button 
-                onClick={handleDeposit} 
-                className="w-full" 
+              <Button
+                onClick={handleDeposit}
+                variant="glow"
+                className="w-full"
                 size="lg"
                 disabled={loading || !amount}
               >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {loading && <Loader2 className="animate-spin" />}
                 {/* SỬA: Dùng parseInt */}
                 {loading ? 'Đang xử lý...' : `Nạp ${amount ? parseInt(amount).toLocaleString('vi-VN') : '0'}₫`}
               </Button>

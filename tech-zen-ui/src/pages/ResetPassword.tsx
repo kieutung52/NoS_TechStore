@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { CardContent } from '../components/ui/card';
+import { AuthShell } from '../components/AuthShell';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { KeyRound, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
@@ -67,71 +68,63 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary">
-              <KeyRound className="h-6 w-6 text-primary-foreground" />
-            </div>
-          </div>
-          <CardTitle className="text-2xl font-bold text-center">Đặt lại mật khẩu</CardTitle>
-          <CardDescription className="text-center">
-            Nhập mật khẩu mới cho tài khoản: {email}
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="password">Mật khẩu mới</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Xác nhận mật khẩu mới</Label>
+    <AuthShell
+      icon={KeyRound}
+      title="Đặt lại mật khẩu"
+      description={<>Nhập mật khẩu mới cho tài khoản: {email}</>}
+    >
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="password">Mật khẩu mới</Label>
+            <div className="relative">
               <Input
-                id="confirmPassword"
-                type="password"
+                id="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
             </div>
-            
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {loading ? 'Đang lưu...' : 'Đặt lại mật khẩu'}
-            </Button>
-            
-            <Button variant="ghost" className="w-full" asChild>
-              <Link to="/login">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Quay lại Đăng nhập
-              </Link>
-            </Button>
-          </CardContent>
-        </form>
-      </Card>
-    </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Xác nhận mật khẩu mới</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+          
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {loading ? 'Đang lưu...' : 'Đặt lại mật khẩu'}
+          </Button>
+          
+          <Button variant="ghost" className="w-full" asChild>
+            <Link to="/login">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Quay lại Đăng nhập
+            </Link>
+          </Button>
+        </CardContent>
+      </form>
+    </AuthShell>
   );
 };
 

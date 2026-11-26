@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { CardContent, CardFooter } from '../components/ui/card';
+import { AuthShell } from '../components/AuthShell';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { KeyRound, ArrowLeft, Loader2 } from 'lucide-react';
@@ -48,48 +49,39 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary">
-              <KeyRound className="h-6 w-6 text-primary-foreground" />
-            </div>
+    <AuthShell
+      icon={KeyRound}
+      title="Quên mật khẩu"
+      description={<>Nhập email của bạn để nhận mã OTP</>}
+    >
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="email@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
-          <CardTitle className="text-2xl font-bold text-center">Quên mật khẩu</CardTitle>
-          <CardDescription className="text-center">
-            Nhập email của bạn để nhận mã OTP
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="email@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {loading ? 'Đang gửi...' : 'Gửi mã OTP'}
-            </Button>
-            <Button variant="ghost" className="w-full" asChild>
-              <Link to="/login">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Quay lại Đăng nhập
-              </Link>
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-4">
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {loading ? 'Đang gửi...' : 'Gửi mã OTP'}
+          </Button>
+          <Button variant="ghost" className="w-full" asChild>
+            <Link to="/login">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Quay lại Đăng nhập
+            </Link>
+          </Button>
+        </CardFooter>
+      </form>
+    </AuthShell>
   );
 };
 

@@ -40,8 +40,11 @@ const RoutingMachine = ({ start, end, shipper }: RoutingMachineProps) => {
       draggableWaypoints: false,
       
       lineOptions: {
+        // Thuộc tính stroke của SVG không đọc được biến CSS => dùng mã màu cố định (Ion/Plasma).
+        // Lớp dưới rộng, mờ tạo quầng sáng; lớp trên là đường đi chính.
         styles: [
-          { color: 'hsl(var(--primary))', opacity: 0.8, weight: 6 }
+          { color: '#A06BFA', opacity: 0.25, weight: 12 },
+          { color: '#479AFF', opacity: 0.95, weight: 4 }
         ],
         extendToWaypoints: undefined, 
         missingRouteTolerance: undefined 

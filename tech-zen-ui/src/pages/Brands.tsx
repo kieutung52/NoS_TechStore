@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { Card, CardContent } from '../components/ui/card';
-import { Button } from '../components/ui/button';
 import { brandService } from '../services/brandService';
 import type { BrandResponse } from '../types';
 import { Skeleton } from '../components/ui/skeleton';
@@ -34,41 +32,48 @@ const Brands = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Thương hiệu</h1>
+
+      <main className="flex-1 container mx-auto px-4 py-10">
+        <div className="mb-10">
+          <h1 className="mb-2 text-3xl font-bold md:text-4xl">Thương hiệu</h1>
           <p className="text-muted-foreground">Khám phá các thương hiệu hàng đầu tại TechStore</p>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {[...Array(8)].map((_, i) => (
-              <Skeleton key={i} className="h-40 w-full" />
+              <Skeleton key={i} className="h-60 w-full rounded-xl" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {brands.map((brand) => (
-              <Card key={brand.id} className="group overflow-hidden">
-                <CardContent className="p-6 flex flex-col items-center text-center">
-                  <img
-                    src={brand.logoUrl || `https://placehold.co/100x100/e2e8f0/64748b?text=${brand.name}`}
-                    alt={brand.name}
-                    className="h-20 w-auto mb-4 object-contain"
-                  />
-                  <h3 className="font-semibold text-lg text-foreground mb-1">{brand.name}</h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                    {brand.description}
-                  </p>
-                  <Button variant="outline" size="sm" asChild>
-                    {/* Sửa: Lọc theo brandId */}
-                    <Link to={`/products?brandId=${brand.id}`}>
-                      Xem sản phẩm <ArrowRight className="h-4 w-4 ml-2" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {brands.map((brand, i) => (
+              // Cả card là liên kết, lọc sản phẩm theo brandId
+              <Link
+                key={brand.id}
+                to={`/products?brandId=${brand.id}`}
+                className="group flex animate-rise flex-col rounded-xl border border-border bg-card p-5 shadow transition-all duration-300 ease-out-soft hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                style={{ "--i": i } as React.CSSProperties}
+              >
+                <div className="mb-5 grid h-28 place-items-center overflow-hidden rounded-lg border border-border bg-field p-4">
+                  {brand.logoUrl ? (
+                    <img
+                      src={brand.logoUrl}
+                      alt={brand.name}
+                      loading="lazy"
+                      className="max-h-full w-auto object-contain transition-transform duration-500 ease-out-soft group-hover:scale-105"
+                    />
+                  ) : (
+                    <span className="font-display text-3xl font-bold text-muted-foreground">{brand.name.charAt(0)}</span>
+                  )}
+                </div>
+                <h3 className="mb-1 text-lg font-semibold text-foreground">{brand.name}</h3>
+                <p className="mb-5 line-clamp-2 text-sm text-muted-foreground">{brand.description}</p>
+                <span className="mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+                  Xem sản phẩm
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+              </Link>
             ))}
           </div>
         )}

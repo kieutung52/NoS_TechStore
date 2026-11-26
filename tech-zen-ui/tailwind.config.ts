@@ -127,6 +127,10 @@ export default {
           from: { transform: "translateX(-100%)" },
           to: { transform: "translateX(100%)" },
         },
+        "caret-blink": {
+          "0%,70%,100%": { opacity: "1" },
+          "20%,50%": { opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -134,6 +138,7 @@ export default {
         // backwards (không phải both): hết animation thì trả transform lại cho hover:-translate-y
         rise: "rise 0.6s var(--ease-out) calc(var(--i, 0) * 70ms) backwards",
         shimmer: "shimmer 1.6s ease-in-out infinite",
+        "caret-blink": "caret-blink 1.25s ease-out infinite",
       },
     },
   },

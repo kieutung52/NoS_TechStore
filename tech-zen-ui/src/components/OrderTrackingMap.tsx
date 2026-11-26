@@ -16,7 +16,7 @@ const AutoFitBounds = ({ bounds }: { bounds: L.LatLngBounds }) => {
 
 const createIcon = (className: string, iconHtml: string) => {
   return L.divIcon({
-    html: `<div class="${cn("h-10 w-10 rounded-full flex items-center justify-center text-white shadow-lg", className)}">
+    html: `<div class="${cn("h-10 w-10 rounded-full flex items-center justify-center text-primary-foreground ring-2 ring-background shadow-glow-sm", className)}">
              ${iconHtml}
            </div>`,
     className: 'bg-transparent border-0',
@@ -27,8 +27,8 @@ const createIcon = (className: string, iconHtml: string) => {
 };
 
 const storeIcon = createIcon('bg-primary', '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><path d="M12 22.08V12"/></svg>');
-const userIcon = createIcon('bg-gray-600', '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>');
-const shipperIcon = createIcon('bg-green-600', '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>');
+const userIcon = createIcon('bg-plasma', '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>');
+const shipperIcon = createIcon('bg-success', '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>');
 
 interface OrderTrackingMapProps {
   storeCoords: LatLngTuple;

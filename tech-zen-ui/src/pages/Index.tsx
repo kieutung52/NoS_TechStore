@@ -9,44 +9,21 @@ import { Card, CardContent } from "../components/ui/card";
 import { Skeleton } from "../components/ui/skeleton";
 import {
   ChevronRight,
-  Cpu,
-  MemoryStick,
-  HardDrive,
   Package,
   TruckIcon,
   ShieldCheck,
   BadgeCheck,
-  CircuitBoard,
-  Monitor,
-  Laptop,
-  Mouse,
-  Keyboard,
-  PcCase,
   MapPin,
   Phone,
   Clock,
 } from "lucide-react";
+import { categoryIconFor } from "../lib/categoryIcon";
+import { thumbnailUrl } from "../lib/productImage";
 import { productService } from "../services/productService";
 import { categoryService } from "../services/categoryService";
 import { websiteConfig } from "../config/website";
 import type { ProductResponse } from "../types";
 import type { CategoryResponse } from "../types";
-import { LucideIcon } from 'lucide-react';
-
-// Icon theo tên danh mục (id thay đổi mỗi lần seed lại DB nên không map theo id)
-const categoryIconFor = (name: string): LucideIcon => {
-  const n = name.toLowerCase();
-  if (n.includes("cpu") || n.includes("vi xử lý")) return Cpu;
-  if (n.includes("ram") || n.includes("bộ nhớ")) return MemoryStick;
-  if (n.includes("vga") || n.includes("card") || n.includes("mainboard") || n.includes("bo mạch")) return CircuitBoard;
-  if (n.includes("ổ cứng") || n.includes("ssd") || n.includes("hdd")) return HardDrive;
-  if (n.includes("màn hình")) return Monitor;
-  if (n.includes("laptop")) return Laptop;
-  if (n.includes("chuột")) return Mouse;
-  if (n.includes("bàn phím")) return Keyboard;
-  if (n === "pc" || n.startsWith("pc ") || n.includes("máy bộ")) return PcCase;
-  return Package;
-};
 
 const features = [
   { Icon: BadgeCheck, title: "Sản phẩm chính hãng", desc: "100% hàng chính hãng" },
@@ -95,7 +72,7 @@ const Index = () => {
     ? featuredProducts.reduce((best, p) => (p.quantitySales > best.quantitySales ? p : best))
     : null;
   const spotlightVariant = spotlight?.variants[0];
-  const spotlightImage = spotlightVariant?.images?.[0]?.imageUrl;
+  const spotlightImage = thumbnailUrl(spotlightVariant?.images);
 
   const mapMarkers = [
     {

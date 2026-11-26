@@ -58,7 +58,7 @@ export const AddressSearch = ({ onAddressSelect }: AddressSearchProps) => {
         onBlur={() => setTimeout(() => setShowResults(false), 150)} 
       />
       {showResults && (debouncedQuery.length >= 3) && (
-        <Card className="absolute z-10 w-full mt-1 shadow-lg">
+        <Card className="absolute z-20 mt-1 w-full bg-popover/95 shadow-lg backdrop-blur-xl">
           <ScrollArea className="h-auto max-h-60">
             <CardContent className="p-2">
               {loading && (

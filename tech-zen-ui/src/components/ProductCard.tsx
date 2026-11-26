@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Star, Eye } from "lucide-react";
 import type { ProductResponse } from "@/types";
 import { useCart } from "@/hooks/useCart";
+import { thumbnailUrl } from "@/lib/productImage";
 
 interface ProductCardProps {
   product: ProductResponse;
@@ -18,7 +19,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const variant = product.variants[0];
   const price = variant?.price || 0;
 
-  const imageUrl = variant?.images?.[0]?.imageUrl || `https://placehold.co/600x600/0D1220/8F98AD?text=${product.name.charAt(0)}`;
+  const imageUrl = thumbnailUrl(variant?.images) || `https://placehold.co/600x600/0D1220/8F98AD?text=${product.name.charAt(0)}`;
 
   const handleAddToCartClick = (e: React.MouseEvent) => {
     e.preventDefault();
