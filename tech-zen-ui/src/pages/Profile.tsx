@@ -30,7 +30,89 @@ import {
 } from '../components/ui/alert-dialog';
 import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { AddressFormDialog } from '../components/AddressFormDialog';
 import { format } from 'date-fns';
+
+// Một dòng giao dịch ví: tiền vào xanh, tiền ra đỏ
+const TransactionRow = ({ tx }: { tx: WalletTransactionResponse }) => {
+  const incoming = tx.amount > 0;
+  return (
+    <li className="flex items-center gap-3 py-3 text-sm first:pt-0 last:pb-0">
+      <span className={cn(
+        "grid h-9 w-9 shrink-0 place-items-center rounded-lg border",
+        incoming ? "border-success/30 bg-success/10 text-success" : "border-destructive/30 bg-destructive/10 text-destructive"
+      )}>
+        {incoming ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate font-medium">{tx.description}</p>
+        <p className="font-mono text-[11px] text-muted-foreground">{new Date(tx.transactionDate).toLocaleString('vi-VN')}</p>
+      </div>
+      <span className={cn("font-mono text-sm tabular-nums", incoming ? 'text-success' : 'text-destructive')}>
+        {incoming ? '+' : ''}{tx.amount.toLocaleString('vi-VN')}₫
+      </span>
+    </li>
+  );
+};
+
+const HISTORY_PAGE_SIZE = 10;
+
+// Toàn bộ lịch sử giao dịch ví, tải thêm theo trang
+const TransactionHistoryDialog = ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) => {
+  const [items, setItems] = useState<WalletTransactionResponse[]>([]);
+  const [page, setPage] = useState(0);
+  const [last, setLast] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const loadPage = useCallback(async (p: number) => {
+    setLoading(true);
+    try {
+      const res = await walletService.getTransactions(p, HISTORY_PAGE_SIZE);
+      if (res.success && res.data) {
+        const data = res.data;
+        setItems(prev => (p === 0 ? data.content : [...prev, ...data.content]));
+        setPage(p);
+        setLast(data.last);
+        setTotal(data.totalElements);
+      }
+    } catch (error) {
+      toast({ title: "Không tải được lịch sử giao dịch", description: (error as Error).message, variant: "destructive" });
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (open) loadPage(0);
+  }, [open, loadPage]);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-[560px]">
+        <DialogHeader>
+          <DialogTitle>Lịch sử giao dịch</DialogTitle>
+          <DialogDescription className="font-mono text-xs">
+            {total > 0 ? `${items.length}/${total} giao dịch` : 'Nạp, rút, thanh toán và hoàn tiền của ví'}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="-mx-6 min-h-0 flex-1 overflow-y-auto px-6">
+          {items.length === 0 && loading && <Skeleton className="h-40 w-full" />}
+          {items.length === 0 && !loading && <p className="py-6 text-center text-sm text-muted-foreground">Không có giao dịch nào.</p>}
+          <ul className="divide-y divide-border">
+            {items.map(tx => <TransactionRow key={tx.id} tx={tx} />)}
+          </ul>
+          {!last && (
+            <Button variant="outline" className="mt-4 w-full" onClick={() => loadPage(page + 1)} disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Tải thêm
+            </Button>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 const ProfileTab = () => {
   const { user, refreshUser } = useAuth();
@@ -128,6 +210,7 @@ const WalletTab = () => {
   const [confirmPin, setConfirmPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [transactions, setTransactions] = useState<WalletTransactionResponse[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const fetchTransactions = useCallback(async () => {
     try {
@@ -225,33 +308,17 @@ const WalletTab = () => {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Button variant="glow" onClick={() => navigate('/wallet/deposit')}><CreditCard className="mr-2 h-4 w-4" /> Nạp tiền</Button>
-          <Button variant="outline"><History className="mr-2 h-4 w-4" /> Lịch sử giao dịch</Button>
+          <Button variant="outline" onClick={() => setHistoryOpen(true)}><History className="mr-2 h-4 w-4" /> Lịch sử giao dịch</Button>
         </div>
         <Separator />
         <h4 className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Giao dịch gần đây</h4>
         <ul className="divide-y divide-border">
-          {transactions.length > 0 ? transactions.map(tx => {
-            const incoming = tx.amount > 0;
-            return (
-              <li key={tx.id} className="flex items-center gap-3 py-3 text-sm first:pt-0 last:pb-0">
-                <span className={cn(
-                  "grid h-9 w-9 shrink-0 place-items-center rounded-lg border",
-                  incoming ? "border-success/30 bg-success/10 text-success" : "border-destructive/30 bg-destructive/10 text-destructive"
-                )}>
-                  {incoming ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">{tx.description}</p>
-                  <p className="font-mono text-[11px] text-muted-foreground">{new Date(tx.transactionDate).toLocaleString('vi-VN')}</p>
-                </div>
-                <span className={cn("font-mono text-sm tabular-nums", incoming ? 'text-success' : 'text-destructive')}>
-                  {incoming ? '+' : ''}{tx.amount.toLocaleString('vi-VN')}₫
-                </span>
-              </li>
-            );
-          }) : <li className="text-sm text-muted-foreground">Không có giao dịch nào.</li>}
+          {transactions.length > 0
+            ? transactions.map(tx => <TransactionRow key={tx.id} tx={tx} />)
+            : <li className="text-sm text-muted-foreground">Không có giao dịch nào.</li>}
         </ul>
       </CardContent>
+      <TransactionHistoryDialog open={historyOpen} onOpenChange={setHistoryOpen} />
     </Card>
   );
 };
@@ -262,6 +329,14 @@ const AddressTab = () => {
   const [loading, setLoading] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState<AddressResponse | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [addressToEdit, setAddressToEdit] = useState<AddressResponse | null>(null);
+  const { user } = useAuth();
+
+  const openForm = (addr: AddressResponse | null) => {
+    setAddressToEdit(addr);
+    setFormOpen(true);
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -310,8 +385,7 @@ const AddressTab = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-lg">Địa chỉ giao hàng</CardTitle>
-          {/* TODO: Thêm logic mở modal/trang tạo địa chỉ */}
-          <Button size="sm" variant="outline"><Plus className="mr-2 h-4 w-4" /> Thêm địa chỉ mới</Button>
+          <Button size="sm" variant="outline" onClick={() => openForm(null)}><Plus className="mr-2 h-4 w-4" /> Thêm địa chỉ mới</Button>
         </CardHeader>
         <CardContent className="space-y-3">
           {loading && <Skeleton className="h-20 w-full" />}
@@ -340,8 +414,7 @@ const AddressTab = () => {
                     <p className="text-sm text-muted-foreground">{`${addr.note || ''} ${addr.district}, ${addr.city}, ${addr.country}`}</p>
                   </div>
                   <div className="flex gap-1">
-                    {/* TODO: Thêm logic mở modal/trang sửa địa chỉ */}
-                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Sửa địa chỉ"><Edit className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Sửa địa chỉ" onClick={() => openForm(addr)}><Edit className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10" aria-label="Xóa địa chỉ" onClick={() => { setAddressToDelete(addr); setShowDeleteDialog(true); }}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
@@ -357,6 +430,14 @@ const AddressTab = () => {
           ))}
         </CardContent>
       </Card>
+
+      <AddressFormDialog
+        open={formOpen}
+        address={addressToEdit}
+        defaultFullName={user?.fullName}
+        onOpenChange={setFormOpen}
+        onSaved={fetchData}
+      />
 
       {/* Delete Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
