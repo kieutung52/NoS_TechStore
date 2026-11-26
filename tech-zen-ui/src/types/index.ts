@@ -249,6 +249,7 @@ export interface PaymentMethodResponse {
 
 export interface OrderDetailResponse {
   id: number;
+  productId: UUID;
   productVariantId: UUID;
   productName: string;
   quantity: number;
@@ -477,6 +478,8 @@ export interface ImageActionRequest {
 export interface CreateReviewRequest {
   rating: number;
   comment?: string;
+  /** Món trong đơn đã giao mà đánh giá thuộc về (mỗi món 1 đánh giá) */
+  orderDetailId?: number;
 
 }
 export interface UpdateReviewRequest {

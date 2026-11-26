@@ -450,6 +450,7 @@ public class OrderService {
     private OrderDetailResponse mapToDetailResponse(OrderDetail detail) {
         return ResponseDto.OrderDetailResponse.builder()
                 .id(detail.getId())
+                .productId(detail.getProductVariant().getProduct().getId())
                 .productVariantId(detail.getProductVariant().getId())
                 .productName(detail.getProductVariant().getProduct().getName())
                 .quantity(detail.getQuantity())

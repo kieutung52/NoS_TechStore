@@ -277,6 +277,7 @@ public class ResponseDto {
     @NoArgsConstructor
     public static class OrderDetailResponse {
         private Long id;
+        private UUID productId;
         private UUID productVariantId;
         private String productName;
         private Integer quantity;

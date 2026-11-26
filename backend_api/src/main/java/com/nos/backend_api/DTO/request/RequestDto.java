@@ -344,6 +344,8 @@ public class RequestDto {
         @Min(1) @Max(5)
         private Integer rating;
         private String comment;
+        // Món trong đơn đã giao mà đánh giá này thuộc về (mỗi món 1 đánh giá). Bỏ trống = kiểu cũ.
+        private Long orderDetailId;
         // Multipart for attachments
     }
 

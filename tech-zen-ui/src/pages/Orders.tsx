@@ -176,13 +176,13 @@ const Orders = () => {
                       >
                         Xem chi tiết
                       </Button>
-                      {/* BỔ SUNG: Cho phép viết review nếu đã giao hàng */}
-                      {order.status === OrderStatus.DELIVERED && (
+                      {/* Đơn đã giao còn món chưa đánh giá: đánh giá từng món ở trang chi tiết đơn */}
+                      {order.status === OrderStatus.DELIVERED && order.details.some((d) => !d.review) && (
                         <Button
                           size="sm"
                           variant="ghost"
                           className="text-primary hover:text-primary"
-                          onClick={() => navigate(`/products/${order.details[0].productVariantId.split('-')[0]}`)}
+                          onClick={() => navigate(`/orders/${order.id}`)}
                         >
                           Viết đánh giá
                         </Button>

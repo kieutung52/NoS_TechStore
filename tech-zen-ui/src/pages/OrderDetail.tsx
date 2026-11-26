@@ -23,7 +23,7 @@ import { toast } from "../hooks/use-toast";
 import { orderService } from "../services/orderService";
 import { addressService } from "../services/addressService";
 
-import type { OrderResponse, AddressResponse } from "../types";
+import type { OrderResponse, AddressResponse, OrderDetailResponse, ReviewResponse } from "../types";
 import { OrderStatus } from "../types";
 
 import {
@@ -38,8 +38,10 @@ import {
   Archive,
   Truck,
   XCircle,
+  Star,
 } from "lucide-react";
 import { cn } from "../lib/utils";
+import { ReviewDialog } from "../components/ReviewDialog";
 
 import { OrderStatusBadge } from "../lib/badgeUtils";
 import { OrderTrackingMap } from "../components/OrderTrackingMap";
@@ -61,6 +63,17 @@ const OrderDetail = () => {
 
   const [loading, setLoading] = useState(true);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [reviewItem, setReviewItem] = useState<OrderDetailResponse | null>(null);
+
+  // Gắn đánh giá vừa gửi vào đúng món để nút "Viết đánh giá" đổi thành điểm đã chấm
+  const handleReviewSubmitted = (orderDetailId: number, review: ReviewResponse) => {
+    setOrder((prev) =>
+      prev && {
+        ...prev,
+        details: prev.details.map((d) => (d.id === orderDetailId ? { ...d, review } : d)),
+      }
+    );
+  };
 
   // ==============================
   // Fetch đơn hàng + địa chỉ
@@ -317,19 +330,19 @@ const OrderDetail = () => {
 
                           {order.status === OrderStatus.DELIVERED && (
                             <TableCell className="text-right">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  navigate(
-                                    `/products/${
-                                      item.productVariantId.split("-")[0]
-                                    }`
-                                  )
-                                }
-                              >
-                                Viết đánh giá
-                              </Button>
+                              {item.review ? (
+                                <span
+                                  className="inline-flex items-center gap-1 whitespace-nowrap font-mono text-xs text-warning"
+                                  aria-label={`Đã đánh giá ${item.review.rating} trên 5 sao`}
+                                >
+                                  <Star className="h-3.5 w-3.5 fill-warning" />
+                                  {item.review.rating}/5
+                                </span>
+                              ) : (
+                                <Button variant="outline" size="sm" onClick={() => setReviewItem(item)}>
+                                  Viết đánh giá
+                                </Button>
+                              )}
                             </TableCell>
                           )}
                         </TableRow>
@@ -427,6 +440,12 @@ const OrderDetail = () => {
           </div>
         </div>
       </main>
+
+      <ReviewDialog
+        item={reviewItem}
+        onOpenChange={(open) => !open && setReviewItem(null)}
+        onSubmitted={handleReviewSubmitted}
+      />
 
       <Footer />
     </div>

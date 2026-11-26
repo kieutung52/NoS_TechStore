@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.nos.backend_api.DTO.data.enums.AttachmentType;
+import com.nos.backend_api.DTO.data.enums.OrderStatus;
 import com.nos.backend_api.DTO.data.redis_cache.RedisData;
 import com.nos.backend_api.DTO.request.RequestDto.CreateReviewRequest;
 import com.nos.backend_api.DTO.request.RequestDto.UpdateReviewRequest;
@@ -20,6 +21,7 @@ import com.nos.backend_api.DTO.response.ResponseDto;
 import com.nos.backend_api.DTO.response.ResponseDto.ReviewResponse;
 import com.nos.backend_api.exceptions.AppException;
 import com.nos.backend_api.exceptions.ErrorCode;
+import com.nos.backend_api.models.payment.OrderDetail;
 import com.nos.backend_api.models.product.Review;
 import com.nos.backend_api.models.product.ReviewAttachment;
 import com.nos.backend_api.repositories.AccountRepository;
@@ -77,12 +79,25 @@ public class ReviewService {
     // POST /reviews/products/{productId}
     @Transactional
     public ApiResponse<ReviewResponse> createReview(UUID userId, UUID productId, CreateReviewRequest request, List<MultipartFile> attachments) {
-        if (!orderDetailRepository.existsByUserPurchase(userId, productId)) {
+        OrderDetail orderDetail = null;
+        if (request.getOrderDetailId() != null) {
+            // Đánh giá gắn với 1 món cụ thể: phải là món của chính user, đơn đã giao, đúng sản phẩm, chưa đánh giá
+            orderDetail = orderDetailRepository.findById(request.getOrderDetailId())
+                    .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
+            boolean eligible = orderDetail.getOrder().getUser().getId().equals(userId)
+                    && orderDetail.getOrder().getStatus() == OrderStatus.DELIVERED
+                    && orderDetail.getProductVariant().getProduct().getId().equals(productId)
+                    && orderDetail.getReview() == null;
+            if (!eligible) {
+                throw new AppException(ErrorCode.BAD_REQUEST);
+            }
+        } else if (!orderDetailRepository.existsByUserPurchase(userId, productId)) {
             throw new AppException(ErrorCode.BAD_REQUEST);
         }
         Review review = reviewRepository.save(Review.builder()
                 .user(accountRepository.findById(userId).orElseThrow())
                 .product(productRepository.findById(productId).orElseThrow())
+                .orderDetail(orderDetail)
                 .rating(request.getRating())
                 .comment(request.getComment())
                 .build());
