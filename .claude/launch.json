@@ -11,6 +11,7 @@
         "-XX:+UseSerialGC",
         "-XX:TieredStopAtLevel=1",
         "-XX:ReservedCodeCacheSize=64m",
+        "-Duser.timezone=Asia/Ho_Chi_Minh",
         "-jar",
         "backend_api/target/backend_api-0.0.1-SNAPSHOT.jar",
         "--spring.config.import=optional:file:backend_api/.env.local[.properties]"
