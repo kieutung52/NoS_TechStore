@@ -330,6 +330,8 @@ export interface ForgotPasswordRequest {
 export interface ResetPasswordRequest {
   newPassword: string;
   email: string;
+  /** Token do validate-otp (FORGOT_PASSWORD) trả về */
+  resetToken: string;
 }
 
 //--- User Requests ---

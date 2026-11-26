@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { Button } from '../components/ui/button';
 import { CardContent } from '../components/ui/card';
@@ -14,18 +14,16 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  
-  const email = searchParams.get('email');
+  // ValidateOtp chuyển sang đây kèm email + resetToken trong history state
+  const { email, resetToken } = (useLocation().state ?? {}) as { email?: string; resetToken?: string };
 
- 
   useEffect(() => {
-    if (!email) {
-      toast({ title: "Lỗi", description: "Phiên đặt lại mật khẩu không hợp lệ.", variant: "destructive" });
-      navigate('/login');
+    if (!email || !resetToken) {
+      toast({ title: "Lỗi", description: "Phiên đặt lại mật khẩu không hợp lệ. Vui lòng yêu cầu mã OTP mới.", variant: "destructive" });
+      navigate('/forgot-password', { replace: true });
     }
-  }, [email, navigate]);
+  }, [email, resetToken, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +44,7 @@ const ResetPassword = () => {
       const res = await authService.resetPassword({
         email: email!,
         newPassword: password,
+        resetToken: resetToken!,
       });
 
       if (res.success) {

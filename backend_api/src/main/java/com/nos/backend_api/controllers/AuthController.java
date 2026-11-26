@@ -1,6 +1,7 @@
 package com.nos.backend_api.controllers;
 
 import java.text.ParseException;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -56,7 +57,7 @@ public class AuthController {
     }
 
     @PostMapping("/validate-otp")
-    public ApiResponse<Void> validateOtp(@Valid @RequestBody OtpValidationRequest request) {
+    public ApiResponse<Map<String, String>> validateOtp(@Valid @RequestBody OtpValidationRequest request) {
         return authService.validateOtp(request);
     }
 

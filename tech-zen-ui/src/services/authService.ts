@@ -86,7 +86,7 @@ export const authService = {
   /**
    * POST /auth/validate-otp (BE [cite: 3042-3043])
    */
-  async validateOtp(request: OtpValidationRequest): Promise<ApiResponse<null>> {
+  async validateOtp(request: OtpValidationRequest): Promise<ApiResponse<{ resetToken: string } | null>> {
     return apiCall('POST', '/auth/validate-otp', request);
   },
 

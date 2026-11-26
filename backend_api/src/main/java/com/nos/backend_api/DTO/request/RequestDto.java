@@ -128,6 +128,9 @@ public class RequestDto {
         @Email
         @NotBlank
         private String email;
+        // Token validate-otp (FORGOT_PASSWORD) trả về
+        @NotBlank
+        private String resetToken;
     }
 
     // User Requests

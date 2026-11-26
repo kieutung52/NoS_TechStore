@@ -70,6 +70,7 @@ public class AuthService {
     private final Long ACCESS_TOKEN_DURATION = ChronoUnit.HOURS.getDuration().toMillis();  // 1h
     private final Long REFRESH_TOKEN_DURATION = ChronoUnit.DAYS.getDuration().toMillis() * 7;  // 7 days
     private final Long OTP_EXPIRY = 5 * 60 * 1000L;  // 5 min
+    private static final String PASSWORD_RESET_KEY = "pwreset:";
 
     private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
@@ -196,13 +197,20 @@ public class AuthService {
 
     // POST /auth/validate-otp
     @Transactional
-    public ApiResponse<Void> validateOtp(OtpValidationRequest request) {
+    public ApiResponse<Map<String, String>> validateOtp(OtpValidationRequest request) {
         String key = "otp:" + request.getEmail() + ":" + request.getType();  // Assume type
         OtpData otpData = (OtpData) redisTemplate.opsForValue().get(key);
         if (otpData == null || !otpData.getCode().equals(request.getCode())) {
             throw new AppException(ErrorCode.INVALID_KEY);
         }
         redisTemplate.delete(key);  // Invalidate
+        if (request.getType().equals(OtpType.FORGOT_PASSWORD)) {
+            // Bằng chứng đã qua OTP: reset-password chỉ đổi mật khẩu khi có token này (dùng 1 lần)
+            String resetToken = UUID.randomUUID().toString();
+            redisTemplate.opsForValue().set(PASSWORD_RESET_KEY + request.getEmail(), resetToken, OTP_EXPIRY,
+                    java.util.concurrent.TimeUnit.MILLISECONDS);
+            return ApiResponse.success(Map.of("resetToken", resetToken), "OTP valid");
+        }
         if (request.getType().equals(OtpType.REGISTER)) {
             System.out.println("Activating user account for " + request.getEmail());
             Optional<Account> optAccount = accountRepository.findByEmail(request.getEmail());
@@ -226,6 +234,12 @@ public class AuthService {
     // POST /auth/reset-password
     @Transactional
     public ApiResponse<Void> resetPassword(ResetPasswordRequest request) {
+        String tokenKey = PASSWORD_RESET_KEY + request.getEmail();
+        Object resetToken = redisTemplate.opsForValue().get(tokenKey);
+        if (resetToken == null || !resetToken.equals(request.getResetToken())) {
+            throw new AppException(ErrorCode.INVALID_KEY);
+        }
+        redisTemplate.delete(tokenKey);
         Optional<Account> optAccount = accountRepository.findByEmail(request.getEmail());
         if (optAccount.isPresent()) {
             Account account = optAccount.get();

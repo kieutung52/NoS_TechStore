@@ -59,12 +59,13 @@ const ValidateOtp = () => {
           });
           navigate('/login');
         } else if (type === OtpType.FORGOT_PASSWORD) {
-          
+          localStorage.removeItem('tempForgotEmail');
           toast({
             title: "Xác thực thành công!",
             description: "Vui lòng nhập mật khẩu mới của bạn.",
           });
-          navigate(`/reset-password`);
+          // Token đi qua history state, không nằm trên URL
+          navigate('/reset-password', { state: { email, resetToken: res.data?.resetToken } });
         }
       } else {
         throw new Error(res.message);
