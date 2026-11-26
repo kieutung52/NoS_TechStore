@@ -137,17 +137,17 @@ const Checkout = () => {
         if (insufficientFunds) {
           throw new Error("Số dư ví không đủ để thanh toán.");
         }
-        
-        
-        
+        if (!/^\d{6}$/.test(pin)) {
+          throw new Error("Vui lòng nhập mã PIN ví (6 chữ số).");
+        }
       }
 
-      
-
+      // BE kiểm PIN khi trả bằng ví; sai PIN trả về "Mã PIN ví không đúng"
       const response = await orderService.createOrder({
         addressId: finalAddressId,
         paymentMethodId: paymentMethodId,
         note: showNewAddressForm ? addressFormData.note : addresses.find(a => a.id === finalAddressId)?.note,
+        pin: isWalletPayment ? pin : undefined,
       });
 
       if (response.success) {

@@ -20,7 +20,8 @@ public enum ErrorCode {
     NOT_FOUND(1009, "Not found", HttpStatus.NOT_FOUND),
     EXISTS(1009, "Not found", HttpStatus.NOT_FOUND),
     BAD_REQUEST(1009, "server unhealthy", HttpStatus.INTERNAL_SERVER_ERROR),
-    PASSWORD_NOT_MATCH(1010, "Password and Confirm Password do not match", HttpStatus.BAD_REQUEST)
+    PASSWORD_NOT_MATCH(1010, "Password and Confirm Password do not match", HttpStatus.BAD_REQUEST),
+    INVALID_PIN(1011, "Mã PIN ví không đúng", HttpStatus.BAD_REQUEST)
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

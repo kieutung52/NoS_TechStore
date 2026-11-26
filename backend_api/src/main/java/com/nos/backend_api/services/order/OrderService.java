@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,6 +79,8 @@ public class OrderService {
     private final WalletRepository walletRepository;
     private final NotificationProducer notificationProducer;
     private final RedisService redisService;
+    // Cùng cách WalletService băm/kiểm PIN
+    private final BCryptPasswordEncoder pinEncoder = new BCryptPasswordEncoder();
 
     // =====================================
     // POST /orders
@@ -147,6 +150,13 @@ public class OrderService {
             if (user.getWallet() == null) {
                 log.error("User {} does not have a wallet", userId);
                 throw new AppException(ErrorCode.BAD_REQUEST);
+            }
+
+            // Trừ tiền ví phải có PIN đúng; ném lỗi ở đây thì @Transactional hoàn tác đơn, tồn kho, giỏ hàng
+            String pinHash = user.getWallet().getPinHash();
+            if (request.getPin() == null || pinHash == null || !pinEncoder.matches(request.getPin(), pinHash)) {
+                log.warn("Wrong or missing wallet PIN for user {}", userId);
+                throw new AppException(ErrorCode.INVALID_PIN);
             }
 
             BigDecimal requiredAmount = total.add(shippingFee);

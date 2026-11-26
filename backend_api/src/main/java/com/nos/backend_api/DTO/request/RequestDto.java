@@ -461,6 +461,8 @@ public class RequestDto {
         @NotNull
         private Integer paymentMethodId;
         private String note;
+        // PIN ví — bắt buộc khi trả bằng ví (Wallet)
+        private String pin;
     }
 
     @Data

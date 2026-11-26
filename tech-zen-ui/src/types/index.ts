@@ -492,6 +492,8 @@ export interface CreateOrderRequest {
   addressId: number;
   paymentMethodId: number;
   note?: string;
+  /** PIN ví — bắt buộc khi trả bằng ví */
+  pin?: string;
 }
 export interface OrderSearchRequest {
   status?: OrderStatus;

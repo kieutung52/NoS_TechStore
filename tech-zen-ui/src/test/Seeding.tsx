@@ -486,7 +486,8 @@ const SeedingPage = () => {
          
           const orderRes = await orderService.createOrder({
             addressId: addrRes.data!.id,
-            paymentMethodId: random(1, 2)
+            paymentMethodId: random(1, 2),
+            pin: USER_PIN // BE bắt buộc PIN khi trả bằng ví (id 2), COD bỏ qua
           });
           
          
