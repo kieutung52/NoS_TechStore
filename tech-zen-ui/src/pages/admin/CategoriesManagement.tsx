@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Button } from '../../components/ui/button'; 
+import { Button, buttonVariants } from '../../components/ui/button'; 
 import { Card, CardContent } from '../../components/ui/card'; 
 import { Input } from '../../components/ui/input'; 
 import {
@@ -22,7 +22,9 @@ import { Textarea } from '../../components/ui/textarea';
 import { toast } from '../../hooks/use-toast'; 
 import { categoryService } from '../../services/categoryService'; 
 import type { CategoryResponse, CreateCategoryRequest, UpdateCategoryRequest } from '../../types'; 
-import { Plus, Edit, Trash2, ArrowLeft, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, ChevronRight, Loader2, FolderTree } from 'lucide-react';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
+import { TableMessageRow } from '../../components/admin/AdminTable';
 import { cn } from '../../lib/utils'; 
 import {
   AlertDialog,
@@ -84,21 +86,16 @@ const CategoryForm = ({
     };
     return (
         <div className="space-y-6">
-        <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-            <h1 className="text-3xl font-bold">
-                {isEditing ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}
-            </h1>
-            <p className="text-muted-foreground">Quản lý thông tin danh mục</p>
-            </div>
-        </div>
+        <AdminPageHeader
+            eyebrow="Hàng hoá · Danh mục"
+            title={isEditing ? 'Sửa danh mục' : 'Thêm danh mục'}
+            description={isEditing ? category?.name : 'Danh mục con cần chọn danh mục cha.'}
+            onBack={onBack}
+        />
 
         <form onSubmit={handleSubmit}>
-            <Card>
-            <CardContent className="p-6 space-y-6">
+            <Card className="max-w-2xl">
+            <CardContent className="space-y-6 p-6">
                 <div className="space-y-2">
                 <Label htmlFor="name">Tên danh mục</Label>
                 <Input
@@ -142,8 +139,9 @@ const CategoryForm = ({
                 />
                 </div>
                 
-                <div className="flex justify-end">
-                <Button type="submit" disabled={loading}>
+                <div className="flex justify-end gap-2 border-t border-border pt-5">
+                <Button type="button" variant="outline" onClick={onBack} disabled={loading}>Huỷ</Button>
+                <Button type="submit" variant="glow" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {loading ? 'Đang lưu...' : 'Lưu danh mục'}
                 </Button>
@@ -175,28 +173,40 @@ const CategoryRow = ({
 
   return (
     <>
-      <TableRow>
-        <TableCell style={{ paddingLeft: `${level * 24 + 16}px` }}>
+      <TableRow className={cn(level > 0 && 'bg-field/40')}>
+        <TableCell style={{ paddingLeft: `${level * 28 + 16}px` }}>
           <div className="flex items-center gap-2">
-            {hasChildren && (
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsOpen(!isOpen)}>
-                {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            {hasChildren ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                aria-expanded={isOpen}
+                aria-label={isOpen ? `Thu gọn ${category.name}` : `Mở danh mục con của ${category.name}`}
+                onClick={() => setIsOpen(!isOpen)}
+              >
+                <ChevronRight className={cn('h-4 w-4 transition-transform', isOpen && 'rotate-90')} />
               </Button>
+            ) : (
+              // Nhánh cây cho danh mục không có con
+              <span aria-hidden="true" className="ml-3 mr-1 h-px w-4 bg-border" />
             )}
-            <span className={cn(level === 0 ? "font-semibold" : "font-normal", !hasChildren ? "ml-10" : "")}>
-              {category.name}
-            </span>
+            <span className={cn(level === 0 ? 'font-semibold' : 'text-muted-foreground')}>{category.name}</span>
+            {hasChildren && (
+              <span className="font-mono text-[11px] text-muted-foreground">({category.children.length})</span>
+            )}
           </div>
         </TableCell>
-        {/* SỬA: Thêm cột Product Count */}
-        <TableCell className="w-[100px] text-center">{productCount}</TableCell>
-        <TableCell className="text-muted-foreground line-clamp-1">{category.description}</TableCell>
+        <TableCell className="w-[100px] text-center font-mono text-xs tabular-nums">{productCount}</TableCell>
+        <TableCell className="max-w-md">
+          <p className="line-clamp-1 text-muted-foreground">{category.description || '—'}</p>
+        </TableCell>
         <TableCell className="text-right">
-          <div className="flex justify-end gap-2">
-            <Button variant="ghost" size="sm" onClick={() => onEdit(category)}>
+          <div className="flex justify-end gap-1">
+            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Sửa ${category.name}`} onClick={() => onEdit(category)}>
               <Edit className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => onDelete(category)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10" aria-label={`Xoá ${category.name}`} onClick={() => onDelete(category)}>
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
           </div>
@@ -293,24 +303,26 @@ const CategoriesManagement = () => {
   return (
     <>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Quản lý danh mục</h1>
-            <p className="text-muted-foreground">Quản lý cây danh mục sản phẩm</p>
-          </div>
-          <Button onClick={handleAddNew}>
-            <Plus className="mr-2 h-4 w-4" />
-            Thêm danh mục
-          </Button>
-        </div>
+        <AdminPageHeader
+          eyebrow="Hàng hoá"
+          title="Danh mục"
+          description="Cây danh mục hai cấp: danh mục cha và danh mục con."
+          actions={
+            <Button variant="glow" onClick={handleAddNew}>
+              <Plus className="h-4 w-4" />
+              Thêm danh mục
+            </Button>
+          }
+        />
 
-        <Card>
+        <Card className="overflow-hidden">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
-                {/* SỬA: Thêm cột */}
                 <TableRow>
-                  <TableHead>Tên danh mục</TableHead>
+                  <TableHead>
+                    <span className="inline-flex items-center gap-2"><FolderTree className="h-3.5 w-3.5" /> Tên danh mục</span>
+                  </TableHead>
                   <TableHead className="w-[100px] text-center">Số SP</TableHead>
                   <TableHead>Mô tả</TableHead>
                   <TableHead className="text-right">Thao tác</TableHead>
@@ -318,11 +330,9 @@ const CategoriesManagement = () => {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center"> {/* Sửa colSpan */}
-                      Đang tải...
-                    </TableCell>
-                  </TableRow>
+                  <TableMessageRow colSpan={4} loading />
+                ) : categories.length === 0 ? (
+                  <TableMessageRow colSpan={4}>Chưa có danh mục nào.</TableMessageRow>
                 ) : (
                   categories.filter(c => !c.parentCategoryId).map((cat) => (
                     <CategoryRow
@@ -350,7 +360,7 @@ const CategoriesManagement = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleDelete} className={buttonVariants({ variant: 'destructive' })}>
               Xác nhận xóa
             </AlertDialogAction>
           </AlertDialogFooter>

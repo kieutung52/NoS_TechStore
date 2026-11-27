@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../components/ui/button'; 
-import { Card, CardContent } from '../../components/ui/card'; 
+import { Button, buttonVariants } from '../../components/ui/button'; 
+import { Card } from '../../components/ui/card'; 
 import { Input } from '../../components/ui/input'; 
 import {
   Table,
@@ -26,6 +26,8 @@ import { brandService } from '../../services/brandService';
 import type { BrandResponse } from '../../types'; 
 import { Plus, Edit, Trash2, Search, ImageOff } from 'lucide-react';
 import { useDebounce } from '../../hooks/useDebounce';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
+import { AdminTableToolbar, TableMessageRow } from '../../components/admin/AdminTable';
 
 const BrandsManagement = () => {
   const navigate = useNavigate();
@@ -90,86 +92,82 @@ const BrandsManagement = () => {
   return (
     <>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Quản lý thương hiệu</h1>
-            <p className="text-muted-foreground">Thêm, sửa, xóa các thương hiệu ({filteredBrands.length || 0})</p>
-          </div>
-          <Button onClick={() => navigate('/admin/brands/new')}>
-            <Plus className="mr-2 h-4 w-4" />
-            Thêm thương hiệu
-          </Button>
-        </div>
+        <AdminPageHeader
+          eyebrow="Hàng hoá"
+          title="Thương hiệu"
+          description="Logo và mô tả thương hiệu hiển thị trên cửa hàng."
+          actions={
+            <Button variant="glow" onClick={() => navigate('/admin/brands/new')}>
+              <Plus className="h-4 w-4" />
+              Thêm thương hiệu
+            </Button>
+          }
+        />
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="mb-6">
-              <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Tìm kiếm thương hiệu..."
-                  className="pl-10"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
+        <Card className="overflow-hidden">
+          <AdminTableToolbar>
+            <div className="relative w-full max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Tìm theo tên thương hiệu…"
+                aria-label="Tìm thương hiệu"
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
+            <span className="ml-auto font-mono text-xs text-muted-foreground">{filteredBrands.length} thương hiệu</span>
+          </AdminTableToolbar>
 
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {/* === BẮT ĐẦU SỬA === */}
-                  <TableHead className="w-[80px]">Logo</TableHead>
-                  <TableHead>Tên thương hiệu</TableHead>
-                  <TableHead>Mô tả</TableHead>
-                  <TableHead className="text-right">Thao tác</TableHead>
-                  {/* === KẾT THÚC SỬA === */}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center"> {/* Sửa colSpan */}
-                      Đang tải...
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[80px]">Logo</TableHead>
+                <TableHead>Tên thương hiệu</TableHead>
+                <TableHead>Mô tả</TableHead>
+                <TableHead className="text-right">Thao tác</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableMessageRow colSpan={4} loading />
+              ) : filteredBrands.length === 0 ? (
+                <TableMessageRow colSpan={4}>
+                  {searchTerm ? `Không có thương hiệu nào khớp "${searchTerm}".` : 'Chưa có thương hiệu nào.'}
+                </TableMessageRow>
+              ) : (
+                filteredBrands.map((brand) => (
+                  <TableRow key={brand.id}>
+                    <TableCell>
+                      {/* Cùng kiểu khay logo với trang Thương hiệu ngoài cửa hàng */}
+                      <span className="grid h-10 w-14 place-items-center overflow-hidden rounded-md border border-border bg-field">
+                        {brand.logoUrl ? (
+                          <img src={brand.logoUrl} alt={brand.name} className="max-h-full max-w-full object-contain" loading="lazy" />
+                        ) : (
+                          <ImageOff className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </span>
+                    </TableCell>
+                    <TableCell className="font-medium">{brand.name}</TableCell>
+                    <TableCell className="max-w-md">
+                      <p className="line-clamp-1 text-muted-foreground">{brand.description || '—'}</p>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Sửa ${brand.name}`} onClick={() => navigate(`/admin/brands/${brand.id}`)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10" aria-label={`Xoá ${brand.name}`} onClick={() => openDeleteDialog(brand)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  filteredBrands.map((brand) => (
-                    <TableRow key={brand.id}>
-                      {/* === BẮT ĐẦU SỬA === */}
-                      <TableCell>
-                        {brand.logoUrl ? (
-                          <img 
-                            src={brand.logoUrl} 
-                            alt={brand.name} 
-                            className="h-10 w-10 object-contain rounded-md border p-1" 
-                          />
-                        ) : (
-                          <div className="h-10 w-10 rounded-md border p-1 flex items-center justify-center bg-muted">
-                            <ImageOff className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-medium">{brand.name}</TableCell>
-                      {/* === KẾT THÚC SỬA === */}
-                      <TableCell className="text-muted-foreground line-clamp-1">{brand.description}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/brands/${brand.id}`)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => openDeleteDialog(brand)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </Card>
       </div>
 
@@ -184,7 +182,7 @@ const BrandsManagement = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleDelete} className={buttonVariants({ variant: 'destructive' })}>
               Xác nhận xóa
             </AlertDialogAction>
           </AlertDialogFooter>

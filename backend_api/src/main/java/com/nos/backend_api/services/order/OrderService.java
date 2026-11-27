@@ -248,6 +248,11 @@ public class OrderService {
         Specification<Order> spec = (root, q, cb) -> cb.conjunction();
         if (request.getUserId() != null)
             spec = spec.and((root, q, cb) -> cb.equal(root.get("user").get("id"), request.getUserId()));
+        // Bộ lọc trạng thái ở trang admin gửi search.status — trước đây bị bỏ qua
+        if (request.getSearch() != null && request.getSearch().getStatus() != null) {
+            OrderStatus status = request.getSearch().getStatus();
+            spec = spec.and((root, q, cb) -> cb.equal(root.get("status"), status));
+        }
         Page<Order> page = orderRepository.findAll(spec, pageable);
         Page<OrderResponse> dtoPage = page.map(this::mapToOrderResponse);
 

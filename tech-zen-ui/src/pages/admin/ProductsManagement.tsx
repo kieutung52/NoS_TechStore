@@ -1,12 +1,15 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../components/ui/button'; 
-import { Card, CardContent } from '../../components/ui/card'; 
+import { Button, buttonVariants } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input'; 
 import { productService } from '../../services/productService'; 
 import { categoryService } from '../../services/categoryService'; 
 import type { ProductResponse, CategoryResponse, PagedResponse } from '../../types'; 
-import { Search, Plus, Edit, Trash2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Eye, Package } from 'lucide-react';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
+import { AdminPagination, AdminTableToolbar, TableMessageRow } from '../../components/admin/AdminTable';
+import { thumbnailUrl } from '../../lib/productImage';
 import {
   Table,
   TableBody,
@@ -115,110 +118,105 @@ const ProductsManagement = () => {
   return (
     <>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Quản lý sản phẩm</h1>
-            <p className="text-muted-foreground">Quản lý danh sách sản phẩm ({pagedData?.totalElements || 0} sản phẩm)</p>
-          </div>
-          <Button onClick={() => navigate('/admin/products/new')}>
-            <Plus className="mr-2 h-4 w-4" />
-            Thêm sản phẩm
-          </Button>
-        </div>
+        <AdminPageHeader
+          eyebrow="Hàng hoá"
+          title="Sản phẩm"
+          description="Danh sách sản phẩm, giá bán, tồn kho và trạng thái hiển thị."
+          actions={
+            <Button variant="glow" onClick={() => navigate('/admin/products/new')}>
+              <Plus className="h-4 w-4" />
+              Thêm sản phẩm
+            </Button>
+          }
+        />
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="mb-6">
-              <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Tìm kiếm sản phẩm..."
-                  className="pl-10"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
+        <Card className="overflow-hidden">
+          <AdminTableToolbar>
+            <div className="relative w-full max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Tìm theo tên sản phẩm…"
+                aria-label="Tìm sản phẩm"
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
+          </AdminTableToolbar>
 
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tên sản phẩm</TableHead>
-                  <TableHead>Danh mục</TableHead>
-                  <TableHead>Giá</TableHead>
-                  <TableHead>Tồn kho</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead className="text-right">Thao tác</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
-                      Đang tải...
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  pagedData?.content.map((product) => (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Sản phẩm</TableHead>
+                <TableHead>Danh mục</TableHead>
+                <TableHead className="text-right">Giá</TableHead>
+                <TableHead className="text-right">Tồn kho</TableHead>
+                <TableHead>Trạng thái</TableHead>
+                <TableHead className="text-right">Thao tác</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableMessageRow colSpan={6} loading />
+              ) : !pagedData?.content.length ? (
+                <TableMessageRow colSpan={6}>
+                  {searchTerm ? `Không có sản phẩm nào khớp "${searchTerm}".` : 'Chưa có sản phẩm nào.'}
+                </TableMessageRow>
+              ) : (
+                pagedData.content.map((product) => {
+                  const image = thumbnailUrl(product.variants[0]?.images);
+                  return (
                     <TableRow key={product.id}>
-                      <TableCell className="font-medium">{product.name}</TableCell>
-                      <TableCell>{getCategoryName(product.categoryId)}</TableCell>
-                      {/* Giả sử giá đầu tiên là giá bán */}
-                      <TableCell>{formatCurrency(product.variants[0]?.price)}₫</TableCell> 
-                      <TableCell>{product.quantityInStock}</TableCell>
+                      <TableCell className="min-w-[14rem]">
+                        <div className="flex items-center gap-3">
+                          <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-field">
+                            {image ? (
+                              <img src={image} alt="" className="h-full w-full object-cover" loading="lazy" />
+                            ) : (
+                              <Package className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </span>
+                          <span className="font-medium">{product.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{getCategoryName(product.categoryId)}</TableCell>
+                      <TableCell className="text-right font-mono text-xs tabular-nums">
+                        {formatCurrency(product.variants[0]?.price)}₫
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs tabular-nums">{product.quantityInStock}</TableCell>
                       <TableCell>
-                        <ProductStatusBadge
-                          isPublished={product.isPublished}
-                          stock={product.quantityInStock}
-                        />
+                        <ProductStatusBadge isPublished={product.isPublished} stock={product.quantityInStock} />
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => navigate(`/products/${product.id}`)}>
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Xem ${product.name} trên cửa hàng`} onClick={() => navigate(`/products/${product.id}`)}>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/products/${product.id}`)}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Sửa ${product.name}`} onClick={() => navigate(`/admin/products/${product.id}`)}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => openDeleteDialog(product)}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10" aria-label={`Xoá ${product.name}`} onClick={() => openDeleteDialog(product)}>
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-            
-            {pagedData && pagedData.totalPages > 1 && (
-              <div className="flex items-center justify-end space-x-2 pt-4">
-                <span className="text-sm text-muted-foreground">
-                  Trang {pagedData.page + 1} / {pagedData.totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(pagedData.page - 1)}
-                  disabled={pagedData.page === 0}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Trước
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(pagedData.page + 1)}
-                  disabled={pagedData.last}
-                >
-                  Sau
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-            
-          </CardContent>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+
+          {pagedData && (
+            <AdminPagination
+              page={pagedData.page}
+              totalPages={pagedData.totalPages}
+              last={pagedData.last}
+              totalElements={pagedData.totalElements}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </Card>
       </div>
       
@@ -232,7 +230,7 @@ const ProductsManagement = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteProduct} className="bg-destructive hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleDeleteProduct} className={buttonVariants({ variant: 'destructive' })}>
               Xác nhận xóa
             </AlertDialogAction>
           </AlertDialogFooter>

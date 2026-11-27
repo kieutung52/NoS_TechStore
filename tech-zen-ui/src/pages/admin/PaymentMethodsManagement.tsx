@@ -1,8 +1,31 @@
 import { useEffect, useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
+import { Card } from "../../components/ui/card";
+import { Button, buttonVariants } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
-import { Separator } from "../../components/ui/separator";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import { Switch } from "../../components/ui/switch";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "../../components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "../../components/ui/alert-dialog";
+import { CreditCard, Edit, Loader2, Plus, Trash2, Wallet } from "lucide-react";
+import { AdminPageHeader } from "../../components/admin/AdminPageHeader";
+import { cn } from "../../lib/utils";
 import { toast } from "../../hooks/use-toast";
 import {
     getAllPaymentMethods,
@@ -19,6 +42,7 @@ const PaymentMethodsManagement = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [editMode, setEditMode] = useState<PaymentMethodResponse | null>(null);
     const [form, setForm] = useState<CreatePaymentRequest>({ methodName: "", description: "" });
+    const [methodToDelete, setMethodToDelete] = useState<PaymentMethodResponse | null>(null);
     const openAddModal = () => {
         setEditMode(null);
         setForm({ methodName: "", description: "" });
@@ -32,7 +56,7 @@ const PaymentMethodsManagement = () => {
     };
 
     const handleDelete = async (id: number) => {
-        if (!window.confirm("Bạn có chắc muốn xóa phương thức này?")) return;
+        setMethodToDelete(null);
         setLoading(true);
         try {
             const res = await deletePaymentMethod(id);
@@ -85,7 +109,8 @@ const PaymentMethodsManagement = () => {
         setLoading(true);
         try {
             const res = await getAllPaymentMethods();
-            if (res.success && res.data) setMethods(res.data);
+            // BE trả "active" (Lombok bỏ tiền tố "is"); UI đọc isActive như handleToggle
+            if (res.success && res.data) setMethods(res.data.map(pm => ({ ...pm, isActive: pm.isActive ?? pm.active ?? false })));
             else toast({ title: "Lỗi", description: res.message, variant: "destructive" });
         } catch (e) {
             toast({ title: "Lỗi", description: "Không thể tải phương thức thanh toán", variant: "destructive" });
@@ -125,65 +150,124 @@ const PaymentMethodsManagement = () => {
         } finally {
             setLoading(false);
         }
-    }; return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Quản lý phương thức thanh toán</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <Button className="mb-4" onClick={openAddModal}>Thêm phương thức mới</Button>
-                <Separator className="mb-4" />
-                <div className="space-y-4">
-                    {methods.map((pm) => (
-                        <div key={pm.id} className="flex items-center justify-between p-4 border rounded-lg">
-                            <div>
-                                <div className="font-semibold">{pm.methodName}</div>
-                                <div className="text-sm text-muted-foreground">{pm.description}</div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Badge variant={pm.isActive ? "default" : "secondary"}>
-                                    {pm.isActive ? "✓ Hoạt động" : "✗ Tắt"}
-                                </Badge>
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    disabled={loading}
-                                    onClick={() => handleToggle(pm.id)}
-                                >
-                                    {pm.isActive ? "Tắt" : "Bật"}
-                                </Button>
-                                <Button size="sm" variant="secondary" onClick={() => openEditModal(pm)}>
-                                    Sửa
-                                </Button>
-                                <Button size="sm" variant="destructive" onClick={() => handleDelete(pm.id)}>
-                                    Xóa
-                                </Button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                {/* Modal thêm/sửa phương thức */}
-                {modalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-                        <form className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md" onSubmit={handleFormSubmit}>
-                            <h2 className="text-lg font-bold mb-4">{editMode ? "Sửa phương thức" : "Thêm phương thức mới"}</h2>
-                            <div className="mb-4">
-                                <label htmlFor="methodName" className="block font-medium mb-1">Tên phương thức</label>
-                                <input id="methodName" value={form.methodName} onChange={handleFormChange} className="w-full border rounded px-3 py-2" required />
-                            </div>
-                            <div className="mb-4">
-                                <label htmlFor="description" className="block font-medium mb-1">Mô tả</label>
-                                <input id="description" value={form.description} onChange={handleFormChange} className="w-full border rounded px-3 py-2" />
-                            </div>
-                            <div className="flex gap-2 justify-end">
-                                <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Hủy</Button>
-                                <Button type="submit" disabled={loading}>{editMode ? "Lưu" : "Thêm mới"}</Button>
-                            </div>
-                        </form>
-                    </div>
+    };
+
+    // OrderService nhận diện thanh toán bằng ví qua tên "Wallet" — đổi tên là hỏng luồng trả bằng ví
+    const isWalletMethod = (name?: string) => name?.trim().toLowerCase() === "wallet";
+
+    return (
+        <div className="space-y-6">
+            <AdminPageHeader
+                eyebrow="Bán hàng"
+                title="Phương thức thanh toán"
+                description="Bật/tắt phương thức khách được chọn khi thanh toán."
+                actions={
+                    <Button variant="glow" onClick={openAddModal}>
+                        <Plus className="h-4 w-4" />
+                        Thêm phương thức
+                    </Button>
+                }
+            />
+
+            <Card className="overflow-hidden">
+                {methods.length === 0 ? (
+                    <p className="p-10 text-center text-sm text-muted-foreground">
+                        {loading ? "Đang tải…" : "Chưa có phương thức thanh toán nào."}
+                    </p>
+                ) : (
+                    <ul className="divide-y divide-border">
+                        {methods.map((pm) => {
+                            const Icon = isWalletMethod(pm.methodName) ? Wallet : CreditCard;
+                            return (
+                                <li key={pm.id} className="flex flex-wrap items-center gap-4 p-4 sm:px-6">
+                                    <span
+                                        className={cn(
+                                            "grid h-10 w-10 shrink-0 place-items-center rounded-lg border",
+                                            pm.isActive ? "border-primary/30 bg-primary/10 text-primary" : "border-border bg-field text-muted-foreground"
+                                        )}
+                                    >
+                                        <Icon className="h-5 w-5" />
+                                    </span>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <span className="font-semibold">{pm.methodName}</span>
+                                            <span className="font-mono text-[11px] text-muted-foreground">#{pm.id}</span>
+                                            <Badge variant={pm.isActive ? "success" : "secondary"}>{pm.isActive ? "Đang bật" : "Đã tắt"}</Badge>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">{pm.description || "—"}</p>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <Switch
+                                            checked={pm.isActive}
+                                            disabled={loading}
+                                            onCheckedChange={() => handleToggle(pm.id)}
+                                            aria-label={pm.isActive ? `Tắt ${pm.methodName}` : `Bật ${pm.methodName}`}
+                                            className="mr-2"
+                                        />
+                                        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Sửa ${pm.methodName}`} onClick={() => openEditModal(pm)}>
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10" aria-label={`Xoá ${pm.methodName}`} onClick={() => setMethodToDelete(pm)}>
+                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
                 )}
-            </CardContent>
-        </Card>
+            </Card>
+
+            {/* Thêm / sửa phương thức */}
+            <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+                <DialogContent className="sm:max-w-[460px]">
+                    <DialogHeader>
+                        <DialogTitle>{editMode ? "Sửa phương thức" : "Thêm phương thức"}</DialogTitle>
+                        <DialogDescription>Tên và mô tả khách thấy ở bước thanh toán.</DialogDescription>
+                    </DialogHeader>
+                    <form id="payment-method-form" onSubmit={handleFormSubmit} className="space-y-4 py-1">
+                        <div className="space-y-2">
+                            <Label htmlFor="methodName">Tên phương thức</Label>
+                            <Input id="methodName" value={form.methodName} onChange={handleFormChange} required />
+                            {editMode && isWalletMethod(editMode.methodName) && (
+                                <p className="text-xs text-warning">Giữ nguyên tên "Wallet": hệ thống dùng tên này để trừ tiền ví khi đặt hàng.</p>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="description">Mô tả</Label>
+                            <Input id="description" value={form.description} onChange={handleFormChange} />
+                        </div>
+                    </form>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Huỷ</Button>
+                        <Button type="submit" form="payment-method-form" variant="glow" disabled={loading}>
+                            {loading && <Loader2 className="animate-spin" />}
+                            {editMode ? "Lưu" : "Thêm mới"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <AlertDialog open={!!methodToDelete} onOpenChange={(open) => !open && setMethodToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Xoá phương thức "{methodToDelete?.methodName}"?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Khách sẽ không chọn được phương thức này nữa. Muốn tạm ngưng thì nên tắt thay vì xoá.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Huỷ</AlertDialogCancel>
+                        <AlertDialogAction
+                            className={buttonVariants({ variant: "destructive" })}
+                            onClick={() => methodToDelete && handleDelete(methodToDelete.id)}
+                        >
+                            Xoá
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div>
     );
 };
 

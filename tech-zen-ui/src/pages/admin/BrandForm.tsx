@@ -9,6 +9,7 @@ import { toast } from '../../hooks/use-toast';
 import { brandService } from '../../services/brandService';
 import type { BrandResponse, CreateBrandRequest, UpdateBrandRequest } from '../../types';
 import { ArrowLeft, UploadCloud, Loader2 } from 'lucide-react';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
 
 const BrandForm = () => {
   const { id } = useParams<{ id: string }>();
@@ -89,23 +90,19 @@ const BrandForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" onClick={() => navigate('/admin/brands')}>
-            <ArrowLeft className="h-4 w-4" />
+      {/* Nút quay lại là Link: trước đây là <Button> không có type nên bấm vào sẽ submit form */}
+      <AdminPageHeader
+        backTo="/admin/brands"
+        eyebrow="Hàng hoá · Thương hiệu"
+        title={isEditing ? 'Sửa thương hiệu' : 'Tạo thương hiệu'}
+        description={isEditing ? brand.name : 'Tên, mô tả và logo hiển thị trên cửa hàng.'}
+        actions={
+          <Button type="submit" variant="glow" disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {loading ? 'Đang lưu...' : 'Lưu'}
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold">
-              {isEditing ? 'Chỉnh sửa thương hiệu' : 'Tạo thương hiệu mới'}
-            </h1>
-            <p className="text-muted-foreground">{isEditing ? brand.name : 'Tạo thương hiệu'}</p>
-          </div>
-        </div>
-        <Button type="submit" disabled={loading}>
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {loading ? 'Đang lưu...' : 'Lưu'}
-        </Button>
-      </div>
+        }
+      />
 
       <Card>
         <CardHeader>

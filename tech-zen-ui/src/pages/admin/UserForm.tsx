@@ -18,6 +18,7 @@ import type { UserResponse, CreateUserRequest, UpdateUserRequest } from '../../t
 import { UserRole } from '../../types'; 
 import { ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react'; 
 import { format } from 'date-fns'; 
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
 
 const UserForm = () => {
   const { id } = useParams<{ id: string }>();
@@ -96,23 +97,19 @@ const UserForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" onClick={() => navigate('/admin/users')}>
-            <ArrowLeft className="h-4 w-4" />
+      {/* Nút quay lại là Link: trước đây là <Button> không có type nên bấm vào sẽ submit form */}
+      <AdminPageHeader
+        backTo="/admin/users"
+        eyebrow="Khách hàng · Người dùng"
+        title={isEditing ? 'Sửa người dùng' : 'Tạo người dùng'}
+        description={isEditing ? <span className="font-mono">{user.email}</span> : 'Tài khoản tạo ở đây không cần xác thực OTP.'}
+        actions={
+          <Button type="submit" variant="glow" disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {loading ? 'Đang lưu...' : 'Lưu'}
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold">
-              {isEditing ? 'Chỉnh sửa người dùng' : 'Tạo người dùng mới'}
-            </h1>
-            <p className="text-muted-foreground">{isEditing ? user.email : 'Tạo tài khoản mới'}</p>
-          </div>
-        </div>
-        <Button type="submit" disabled={loading}>
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {loading ? 'Đang lưu...' : 'Lưu'}
-        </Button>
-      </div>
+        }
+      />
 
       <Card>
         <CardHeader>

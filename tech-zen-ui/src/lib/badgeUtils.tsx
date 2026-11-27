@@ -68,7 +68,7 @@ export const ProductStatusBadge = ({
 }) => {
   if (stock === 0) {
     return (
-      <Badge variant="destructive" className="flex items-center gap-1.5">
+      <Badge variant="destructive" className="gap-1.5">
         <XCircle className="h-3.5 w-3.5" />
         <span>Hết hàng</span>
       </Badge>
@@ -77,7 +77,7 @@ export const ProductStatusBadge = ({
   
   if (!isPublished) {
     return (
-      <Badge variant="secondary" className="flex items-center gap-1.5">
+      <Badge variant="secondary" className="gap-1.5">
         <Archive className="h-3.5 w-3.5" />
         <span>Đã ẩn</span>
       </Badge>
@@ -85,7 +85,7 @@ export const ProductStatusBadge = ({
   }
 
   return (
-    <Badge variant="success" className="flex items-center gap-1.5">
+    <Badge variant="success" className="gap-1.5">
       <CheckCircle className="h-3.5 w-3.5" />
       <span>Đang bán</span>
     </Badge>
@@ -98,7 +98,7 @@ export const ProductStatusBadge = ({
 export const UserStatusBadge = ({ isActive }: { isActive: boolean }) => {
   if (isActive) {
     return (
-      <Badge variant="success" className="flex items-center gap-1.5">
+      <Badge variant="success" className="gap-1.5">
         <CheckCircle className="h-3.5 w-3.5" />
         <span>Hoạt động</span>
       </Badge>
@@ -106,7 +106,7 @@ export const UserStatusBadge = ({ isActive }: { isActive: boolean }) => {
   }
 
   return (
-    <Badge variant="secondary" className="flex items-center gap-1.5">
+    <Badge variant="secondary" className="gap-1.5">
       <XCircle className="h-3.5 w-3.5" />
       <span>Đã khóa</span>
     </Badge>
@@ -119,7 +119,7 @@ export const UserStatusBadge = ({ isActive }: { isActive: boolean }) => {
 export const RoleBadge = ({ role }: { role: UserRole }) => {
   if (role === UserRole.ADMIN) {
     return (
-      <Badge variant="default" className="flex items-center gap-1.5">
+      <Badge variant="default" className="gap-1.5">
         <Shield className="h-3.5 w-3.5" />
         <span>Quản trị viên</span>
       </Badge>
@@ -127,7 +127,7 @@ export const RoleBadge = ({ role }: { role: UserRole }) => {
   }
 
   return (
-    <Badge variant="secondary" className="flex items-center gap-1.5">
+    <Badge variant="secondary" className="gap-1.5">
       <User className="h-3.5 w-3.5" />
       <span>Người dùng</span>
     </Badge>

@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button'; 
-import { Card, CardContent } from '../../components/ui/card'; 
+import { Card } from '../../components/ui/card'; 
 import { Input } from '../../components/ui/input'; 
 import { userService } from '../../services/userService'; 
-import { Search, Edit, Plus, ChevronLeft, ChevronRight, Wallet } from 'lucide-react'; 
+import { Search, Edit, Plus, Wallet } from 'lucide-react'; 
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
+import { AdminPagination, AdminTableToolbar, TableMessageRow } from '../../components/admin/AdminTable';
 import {
   Table,
   TableBody,
@@ -25,6 +27,11 @@ const formatCurrency = (value: number) => {
   if (!value) return '0₫';
   return value.toLocaleString('vi-VN') + '₫';
 }
+
+const initialsOf = (name: string) => {
+  const parts = (name || '?').trim().split(/\s+/);
+  return (parts.length === 1 ? parts[0].slice(0, 2) : parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
 
 const UsersManagement = () => {
   const navigate = useNavigate();
@@ -71,107 +78,97 @@ const UsersManagement = () => {
   
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Quản lý người dùng</h1>
-          <p className="text-muted-foreground">Quản lý tài khoản ({pagedData?.totalElements || 0} tài khoản)</p>
-        </div>
-        <Button onClick={() => navigate('/admin/users/new')}>
-          <Plus className="mr-2 h-4 w-4" />
-          Thêm người dùng
-        </Button>
-      </div>
+      <AdminPageHeader
+        eyebrow="Khách hàng"
+        title="Người dùng"
+        description="Tài khoản, vai trò, trạng thái và số dư ví."
+        actions={
+          <Button variant="glow" onClick={() => navigate('/admin/users/new')}>
+            <Plus className="h-4 w-4" />
+            Thêm người dùng
+          </Button>
+        }
+      />
 
-      <Card>
-        <CardContent className="p-6">
-          <div className="mb-6">
-            <div className="relative max-w-sm">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Tìm kiếm người dùng (BE chưa hỗ trợ)..."
-                className="pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                disabled 
-              />
-            </div>
+      <Card className="overflow-hidden">
+        <AdminTableToolbar>
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Tìm kiếm người dùng (BE chưa hỗ trợ)..."
+              aria-label="Tìm người dùng"
+              className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              disabled
+            />
           </div>
+        </AdminTableToolbar>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                 {/* === BẮT ĐẦU SỬA === */}
-                <TableHead>Họ và tên</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Vai trò</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead>Số dư Ví</TableHead>
-                <TableHead className="text-right">Thao tác</TableHead>
-                 {/* === KẾT THÚC SỬA === */}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                   {/* Sửa colSpan */}
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    Đang tải...
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Người dùng</TableHead>
+              <TableHead>Vai trò</TableHead>
+              <TableHead>Trạng thái</TableHead>
+              <TableHead className="text-right">Số dư ví</TableHead>
+              <TableHead className="text-right">Thao tác</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableMessageRow colSpan={5} loading />
+            ) : !pagedData?.content.length ? (
+              <TableMessageRow colSpan={5}>Chưa có tài khoản nào.</TableMessageRow>
+            ) : (
+              pagedData.content.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="min-w-[14rem]">
+                    <div className="flex items-center gap-3">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border bg-field font-display text-xs font-semibold text-muted-foreground">
+                        {initialsOf(user.fullName)}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{user.fullName}</p>
+                        <p className="truncate font-mono text-[11px] text-muted-foreground">{user.email}</p>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell><RoleBadge role={user.role} /></TableCell>
+                  <TableCell><UserStatusBadge isActive={user.active} /></TableCell>
+                  <TableCell className="text-right">
+                    <span className="inline-flex items-center gap-2 font-mono text-xs tabular-nums">
+                      <Wallet className="h-3.5 w-3.5 text-success" />
+                      {formatCurrency(user.wallet?.balance ?? 0)}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      aria-label={`Sửa ${user.fullName}`}
+                      onClick={() => navigate(`/admin/users/${user.id}`)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
-              ) : (
-                pagedData?.content.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.fullName}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell><RoleBadge role={user.role} /></TableCell>
-                    <TableCell><UserStatusBadge isActive={user.active} /></TableCell>
-                    {/* === BẮT ĐẦU SỬA === */}
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Wallet className="h-4 w-4 text-green-600"/>
-                        {formatCurrency(user.wallet?.balance ?? 0)}
-                      </div>
-                    </TableCell>
-                    {/* === KẾT THÚC SỬA === */}
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/users/${user.id}`)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-          
-          {/* ... (Giữ nguyên Pagination) ... */} 
-          {pagedData && pagedData.totalPages > 1 && (
-            <div className="flex items-center justify-end space-x-2 pt-4">
-              <span className="text-sm text-muted-foreground">
-                Trang {pagedData.page + 1} / {pagedData.totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(pagedData.page - 1)}
-                disabled={pagedData.page === 0}
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Trước
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(pagedData.page + 1)}
-                disabled={pagedData.last}
-              >
-                Sau
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </CardContent>
+              ))
+            )}
+          </TableBody>
+        </Table>
+
+        {pagedData && (
+          <AdminPagination
+            page={pagedData.page}
+            totalPages={pagedData.totalPages}
+            last={pagedData.last}
+            totalElements={pagedData.totalElements}
+            onPageChange={setCurrentPage}
+          />
+        )}
       </Card>
     </div>
   );

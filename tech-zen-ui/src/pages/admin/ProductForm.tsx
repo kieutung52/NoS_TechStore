@@ -22,6 +22,7 @@ import { ArrowLeft, UploadCloud, Plus, Trash2, Loader2, Edit } from 'lucide-reac
 import { Skeleton } from '../../components/ui/skeleton';
 import { Separator } from '../../components/ui/separator';
 import { EditVariantModal } from './EditVariantModal'; 
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
 
 const ImageUploader = ({ 
   productId, 
@@ -148,7 +149,7 @@ const VariantManager = ({
               <div className="flex justify-between items-center">
                 <div>
                   <p className="font-semibold">SKU: {variant.sku}</p>
-                  <p className="text-primary">{variant.price?.toLocaleString('vi-VN')}₫</p>
+                  <p className="font-mono text-sm tabular-nums text-primary">{variant.price?.toLocaleString('vi-VN')}₫</p>
                   {/* BE gửi stock trong variant, ta dùng nó */}
                   <p className="text-sm text-muted-foreground">Tồn kho (của variant): {variant.stock}</p>
                 </div>
@@ -156,7 +157,7 @@ const VariantManager = ({
                    <Button type="button" variant="outline" size="sm" onClick={() => onEditVariant(variant)}>
                     <Edit className="h-4 w-4 mr-2" /> Chi tiết
                   </Button>
-                  <Button type="button" variant="destructive" size="icon" onClick={() => handleDeleteVariant(variant.id)}>
+                  <Button type="button" variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 hover:text-destructive" aria-label={`Xoá biến thể ${variant.sku}`} onClick={() => handleDeleteVariant(variant.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -307,23 +308,18 @@ const ProductForm = () => {
     <> 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* ... (Giữ nguyên Header Form) ... */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button type="button" variant="outline" size="icon" onClick={() => navigate('/admin/products')}>
-              <ArrowLeft className="h-4 w-4" />
+        <AdminPageHeader
+          backTo="/admin/products"
+          eyebrow="Hàng hoá · Sản phẩm"
+          title={isEditing ? 'Sửa sản phẩm' : 'Thêm sản phẩm'}
+          description={isEditing ? product.name : 'Thông tin chung trước, biến thể và ảnh sau khi lưu.'}
+          actions={
+            <Button type="submit" variant="glow" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting ? 'Đang lưu...' : 'Lưu sản phẩm'}
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold">
-                {isEditing ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
-              </h1>
-              <p className="text-muted-foreground">{isEditing ? product.name : 'Tạo sản phẩm mới'}</p>
-            </div>
-          </div>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isSubmitting ? 'Đang lưu...' : 'Lưu sản phẩm'}
-          </Button>
-        </div>
+          }
+        />
 
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

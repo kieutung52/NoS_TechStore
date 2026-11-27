@@ -308,7 +308,7 @@ export const EditVariantModal = ({ product, variant: initialVariant, onClose, on
               
               {/* Render ảnh CHỜ UPLOAD */}
               {pendingImages.map((img) => (
-                  <div key={img.id} className={`relative aspect-square rounded-md overflow-hidden border group ring-2 ${img.isThumbnail ? 'ring-primary' : 'ring-yellow-500'}`}>
+                  <div key={img.id} className={`relative aspect-square rounded-md overflow-hidden border group ring-2 ${img.isThumbnail ? 'ring-primary' : 'ring-warning'}`}>
                     {img.isThumbnail && (
                       <Badge className="absolute top-1 left-1 z-10 text-xs bg-primary text-primary-foreground">Sẽ đặt làm bìa</Badge>
                     )}
