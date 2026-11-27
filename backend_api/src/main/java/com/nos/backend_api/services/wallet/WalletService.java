@@ -45,6 +45,7 @@ public class WalletService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final NotificationProducer notificationProducer;
     private final RedisService redisService;
+    private final PinVerifier pinVerifier;
 
     private String getWalletKey(UUID userId) { return "wallet:" + userId.toString();
     }
@@ -108,9 +109,7 @@ public class WalletService {
         if (wallet.getBalance().compareTo(request.getAmount()) < 0) {
             throw new AppException(ErrorCode.BAD_REQUEST);
         }
-        if (!passwordEncoder.matches(request.getPin(), wallet.getPinHash())) {
-            throw new AppException(ErrorCode.INVALID_PASSWORD);
-        }
+        pinVerifier.verify(userId, request.getPin(), wallet.getPinHash());
         BigDecimal newBalance = wallet.getBalance().subtract(request.getAmount());
         wallet.setBalance(newBalance);
         wallet = walletRepository.save(wallet);
@@ -150,9 +149,7 @@ public class WalletService {
     public ApiResponse<Void> validatePin(UUID userId, ValidatePinRequest request) {
         Wallet wallet = walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
-        if (!passwordEncoder.matches(request.getPin(), wallet.getPinHash())) {
-            throw new AppException(ErrorCode.INVALID_PASSWORD);
-        }
+        pinVerifier.verify(userId, request.getPin(), wallet.getPinHash());
         return ApiResponse.success(null, "PIN valid");
     }
 

@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +56,7 @@ import com.nos.backend_api.repositories.WalletRepository;
 import com.nos.backend_api.repositories.WalletTransactionRepository;
 import com.nos.backend_api.services._system.NotificationProducer;
 import com.nos.backend_api.services._system.RedisService;
+import com.nos.backend_api.services.wallet.PinVerifier;
 import com.nos.backend_api.DTO.data.redis_cache.RedisData;
 
 import lombok.RequiredArgsConstructor;
@@ -79,8 +79,7 @@ public class OrderService {
     private final WalletRepository walletRepository;
     private final NotificationProducer notificationProducer;
     private final RedisService redisService;
-    // Cùng cách WalletService băm/kiểm PIN
-    private final BCryptPasswordEncoder pinEncoder = new BCryptPasswordEncoder();
+    private final PinVerifier pinVerifier;
 
     // =====================================
     // POST /orders
@@ -152,12 +151,9 @@ public class OrderService {
                 throw new AppException(ErrorCode.BAD_REQUEST);
             }
 
-            // Trừ tiền ví phải có PIN đúng; ném lỗi ở đây thì @Transactional hoàn tác đơn, tồn kho, giỏ hàng
-            String pinHash = user.getWallet().getPinHash();
-            if (request.getPin() == null || pinHash == null || !pinEncoder.matches(request.getPin(), pinHash)) {
-                log.warn("Wrong or missing wallet PIN for user {}", userId);
-                throw new AppException(ErrorCode.INVALID_PIN);
-            }
+            // Trừ tiền ví phải có PIN đúng (có giới hạn số lần sai); ném lỗi ở đây thì @Transactional
+            // hoàn tác đơn, tồn kho, giỏ hàng — còn bộ đếm sai PIN ở Redis thì vẫn giữ
+            pinVerifier.verify(userId, request.getPin(), user.getWallet().getPinHash());
 
             BigDecimal requiredAmount = total.add(shippingFee);
             BigDecimal currentBalance = user.getWallet().getBalance();

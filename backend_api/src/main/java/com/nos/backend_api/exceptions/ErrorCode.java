@@ -22,7 +22,9 @@ public enum ErrorCode {
     // Mọi chỗ dùng đều là lỗi phía yêu cầu/nghiệp vụ (giỏ trống, hết hàng, thiếu số dư, sai trạng thái đơn...)
     BAD_REQUEST(1009, "Yêu cầu không hợp lệ", HttpStatus.BAD_REQUEST),
     PASSWORD_NOT_MATCH(1010, "Password and Confirm Password do not match", HttpStatus.BAD_REQUEST),
-    INVALID_PIN(1011, "Mã PIN ví không đúng", HttpStatus.BAD_REQUEST)
+    INVALID_PIN(1011, "Mã PIN ví không đúng", HttpStatus.BAD_REQUEST),
+    // Khớp PinVerifier.MAX_ATTEMPTS / LOCK
+    PIN_LOCKED(1012, "Nhập sai PIN quá 5 lần. Thử lại sau 15 phút.", HttpStatus.TOO_MANY_REQUESTS)
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
