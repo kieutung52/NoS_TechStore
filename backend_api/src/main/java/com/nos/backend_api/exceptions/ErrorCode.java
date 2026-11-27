@@ -19,7 +19,8 @@ public enum ErrorCode {
     TOKEN_GENERATION_FAILED(1009, "Token generation failed", HttpStatus.INTERNAL_SERVER_ERROR),
     NOT_FOUND(1009, "Not found", HttpStatus.NOT_FOUND),
     EXISTS(1009, "Not found", HttpStatus.NOT_FOUND),
-    BAD_REQUEST(1009, "server unhealthy", HttpStatus.INTERNAL_SERVER_ERROR),
+    // Mọi chỗ dùng đều là lỗi phía yêu cầu/nghiệp vụ (giỏ trống, hết hàng, thiếu số dư, sai trạng thái đơn...)
+    BAD_REQUEST(1009, "Yêu cầu không hợp lệ", HttpStatus.BAD_REQUEST),
     PASSWORD_NOT_MATCH(1010, "Password and Confirm Password do not match", HttpStatus.BAD_REQUEST),
     INVALID_PIN(1011, "Mã PIN ví không đúng", HttpStatus.BAD_REQUEST)
     ;

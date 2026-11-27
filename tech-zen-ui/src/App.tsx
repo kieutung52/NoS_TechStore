@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "./components/ui/toaster";
 import { Toaster as Sonner } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
@@ -31,7 +32,9 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ValidateOtp from "./pages/ValidateOtp";
 import ResetPassword from "./pages/ResetPassword";
 
-import SeedingPage from "./test/Seeding";
+// Trang seed dữ liệu (/test) chỉ có khi chạy dev: nó chứa tài khoản/mật khẩu seed,
+// import động có điều kiện để bản build production không đóng gói file này.
+const SeedingPage = import.meta.env.DEV ? lazy(() => import("./test/Seeding")) : null;
 
 // Admin Pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -63,7 +66,9 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/test" element={<SeedingPage />} />
+                {SeedingPage && (
+                  <Route path="/test" element={<Suspense fallback={null}><SeedingPage /></Suspense>} />
+                )}
 
                 {/* === TÍNH NĂNG MỚI (Routes) === */}
                 <Route path="/forgot-password" element={<ForgotPassword />} />

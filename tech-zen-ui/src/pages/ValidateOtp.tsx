@@ -45,10 +45,9 @@ const ValidateOtp = () => {
     setLoading(true);
 
     try {
+      // Không log payload/response: chứa mã OTP và resetToken
       const payload = { code, email: email!, type };
-      console.log('Validate OTP payload:', payload);
       const res = await authService.validateOtp(payload);
-      console.log('Validate OTP response:', res);
 
       if (res.success) {
         if (type === OtpType.REGISTER) {

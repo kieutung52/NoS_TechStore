@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent, CardHeader } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useWallet } from '../hooks/useWallet';
@@ -72,7 +72,7 @@ const WalletDeposit = () => {
                 <div className="grid h-12 w-12 place-items-center rounded-xl border border-primary/30 bg-primary/10 text-primary shadow-glow-sm">
                   <Wallet className="h-6 w-6" />
                 </div>
-                <CardTitle className="text-xl">Nạp tiền vào ví</CardTitle>
+                <h1 className="text-xl font-semibold leading-none tracking-tight">Nạp tiền vào ví</h1>
               </div>
               <div className="mt-4 rounded-lg border border-border bg-field/60 px-4 py-3">
                 <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">Số dư hiện tại</p>

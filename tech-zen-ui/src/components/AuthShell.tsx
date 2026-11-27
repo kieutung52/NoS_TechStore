@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader } from "@/components/ui/card";
 import { LogoMark } from "@/components/Header";
 import { websiteConfig } from "@/config/website";
 
@@ -40,7 +40,8 @@ export const AuthShell = ({ icon: Icon, title, description, children }: AuthShel
           <div className="mb-3 grid h-12 w-12 place-items-center rounded-xl border border-primary/30 bg-primary/10 text-primary shadow-glow-sm">
             <Icon className="h-6 w-6" />
           </div>
-          <CardTitle className="text-2xl font-bold">{title}</CardTitle>
+          {/* Tiêu đề chính của trang: h1 (CardTitle mặc định là h3) */}
+          <h1 className="text-2xl font-bold leading-none">{title}</h1>
           <CardDescription className="text-center">{description}</CardDescription>
         </CardHeader>
         {children}

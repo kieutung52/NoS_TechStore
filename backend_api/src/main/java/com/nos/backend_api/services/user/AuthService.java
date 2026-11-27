@@ -1,5 +1,6 @@
 package com.nos.backend_api.services.user;
 
+import java.security.SecureRandom;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -71,6 +72,9 @@ public class AuthService {
     private final Long REFRESH_TOKEN_DURATION = ChronoUnit.DAYS.getDuration().toMillis() * 7;  // 7 days
     private final Long OTP_EXPIRY = 5 * 60 * 1000L;  // 5 min
     private static final String PASSWORD_RESET_KEY = "pwreset:";
+    private static final String OTP_ATTEMPTS_SUFFIX = ":attempts";
+    private static final int OTP_MAX_ATTEMPTS = 5;
+    private static final SecureRandom OTP_RANDOM = new SecureRandom();
 
     private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
@@ -179,12 +183,13 @@ public class AuthService {
     // POST /auth/generate-otp
     @Transactional(readOnly = true)
     public ApiResponse<Void> generateOtp(String email, OtpType type) {
-        String code = String.valueOf((int) (Math.random() * 900000) + 100000);  // 6 digit
+        String code = String.valueOf(OTP_RANDOM.nextInt(900000) + 100000);  // 6 digit, SecureRandom
         String key = "otp:" + email + ":" + type;
 
         OtpData otpData = new OtpData(code, type.name());
 
         redisTemplate.opsForValue().set(key, otpData, OTP_EXPIRY, java.util.concurrent.TimeUnit.MILLISECONDS);
+        redisTemplate.delete(key + OTP_ATTEMPTS_SUFFIX);  // mã mới: đếm lại số lần nhập sai
         // Send via Resend
         Map<String, Object> otpDataEmail = Map.of(
         "otp", code,
@@ -199,11 +204,25 @@ public class AuthService {
     @Transactional
     public ApiResponse<Map<String, String>> validateOtp(OtpValidationRequest request) {
         String key = "otp:" + request.getEmail() + ":" + request.getType();  // Assume type
+        String attemptsKey = key + OTP_ATTEMPTS_SUFFIX;
         OtpData otpData = (OtpData) redisTemplate.opsForValue().get(key);
-        if (otpData == null || !otpData.getCode().equals(request.getCode())) {
+        if (otpData == null) {
+            throw new AppException(ErrorCode.INVALID_KEY);
+        }
+        if (!otpData.getCode().equals(request.getCode())) {
+            // Giới hạn số lần đoán: quá OTP_MAX_ATTEMPTS thì huỷ mã, phải yêu cầu mã mới (chống dò 6 chữ số)
+            Long attempts = redisTemplate.opsForValue().increment(attemptsKey);
+            if (attempts != null && attempts == 1) {
+                redisTemplate.expire(attemptsKey, OTP_EXPIRY, java.util.concurrent.TimeUnit.MILLISECONDS);
+            }
+            if (attempts != null && attempts >= OTP_MAX_ATTEMPTS) {
+                redisTemplate.delete(key);
+                redisTemplate.delete(attemptsKey);
+            }
             throw new AppException(ErrorCode.INVALID_KEY);
         }
         redisTemplate.delete(key);  // Invalidate
+        redisTemplate.delete(attemptsKey);
         if (request.getType().equals(OtpType.FORGOT_PASSWORD)) {
             // Bằng chứng đã qua OTP: reset-password chỉ đổi mật khẩu khi có token này (dùng 1 lần)
             String resetToken = UUID.randomUUID().toString();
