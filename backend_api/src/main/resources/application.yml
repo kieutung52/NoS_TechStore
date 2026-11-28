@@ -66,5 +66,6 @@ app:
     provider: ${STORAGE_PROVIDER:local}
     local:
       dir: ${STORAGE_LOCAL_DIR:./uploads}
-      # URL công khai trình duyệt dùng để tải ảnh (trên server: domain của API + /uploads)
-      public-url: ${STORAGE_PUBLIC_URL:http://localhost:${server.port}/uploads}
+      # Tiền tố URL ảnh lưu vào DB. Mặc định tương đối (/uploads/...): trình duyệt tải ảnh từ chính domain
+      # của trang — production do nginx chuyển /uploads vào backend, dev do Vite proxy sang cổng 8081.
+      public-url: ${STORAGE_PUBLIC_URL:/uploads}

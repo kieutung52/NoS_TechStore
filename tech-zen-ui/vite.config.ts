@@ -8,6 +8,11 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    // URL ảnh trong DB là tương đối (/uploads/...): production do nginx chuyển vào backend,
+    // dev chuyển sang backend qua tunnel 8081.
+    proxy: {
+      "/uploads": "http://localhost:8081",
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
